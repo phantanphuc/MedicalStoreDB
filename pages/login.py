@@ -6,6 +6,7 @@ except ImportError:
     import Tkinter as tk     # python 2
     import tkFont as tkfont  # python 2
 
+import AppManager
 
 class LoginPage(tk.Frame):
     def login(self):
@@ -13,7 +14,7 @@ class LoginPage(tk.Frame):
         password = self.entry2.get()
 
         if (username == "admin" and password == "admin") or True:
-            self.controller.show_frame("MainmenuPage")
+            AppManager.getAppManager().getFrame("MainmenuPage").tkraise()
             # messagebox.showinfo("Login", "Login Successful")
         else:
             messagebox.showerror("Login", "Invalid Username or Password")

@@ -1,46 +1,80 @@
 import tkinter as tk
 
-class PrescriptionFrame(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.master = master
-        self.master.title("Prescription Frame")
-        self.master.geometry("500x500")
-        self.pack()
-        self.create_widgets()
+def add_row(event=None):
+    # Create new row
+    row = len(medicine_list) + 1
 
-    def create_widgets(self):
-        # First row
-        label1 = tk.Label(self, text="Prescription")
-        label1.pack(side="top")
+    # Add name field
+    name_label = tk.Label(form, text=f"Medicine {row} Name:")
+    name_label.grid(row=row, column=0)
+    name_entry = tk.Entry(form)
+    name_entry.grid(row=row, column=1)
 
-        # Second row
-        second_section = tk.Frame(self, bg="white", height=300)
-        second_section.pack(side="top", fill="both", expand=True)
+    # Add price field
+    price_label = tk.Label(form, text=f"Medicine {row} Price:")
+    price_label.grid(row=row, column=2)
+    price_entry = tk.Entry(form)
+    price_entry.grid(row=row, column=3)
 
-        button1 = tk.Button(second_section, text="Button 1")
-        button1.pack(side="left")
+    # Add type field
+    type_label = tk.Label(form, text=f"Medicine {row} Type:")
+    type_label.grid(row=row, column=4)
+    type_entry = tk.Entry(form)
+    type_entry.grid(row=row, column=5)
 
-        button2 = tk.Button(second_section, text="Button 2")
-        button2.pack(side="left")
+    # Add new medicine to list
+    medicine_list.append((name_label, name_entry, price_label, price_entry, type_label, type_entry))
 
-        button3 = tk.Button(second_section, text="Button 3")
-        button3.pack(side="left")
+    # Set focus to first field of new row
+    name_entry.focus()
 
-        # Third row
-        label2 = tk.Label(self, text="Patients")
-        label2.pack(side="top")
+def remove_row():
+    # Remove last row
+    if len(medicine_list) > 1:
+        name_label, name_entry, price_label, price_entry, type_label, type_entry = medicine_list.pop()
+        name_label.destroy()
+        name_entry.destroy()
+        price_label.destroy()
+        price_entry.destroy()
+        type_label.destroy()
+        type_entry.destroy()
 
-        # Fourth row
-        fourth_section = tk.Frame(self, bg="white", height=300)
-        fourth_section.pack(side="top", fill="both", expand=True)
+        # Set focus to last field of previous row
+        last_row = len(medicine_list)
+        if last_row > 0:
+            medicine_list[last_row - 1][4].focus()
 
-        button4 = tk.Button(fourth_section, text="Button 4")
-        button4.pack(side="left")
-
-        button5 = tk.Button(fourth_section, text="Button 5")
-        button5.pack(side="left")
-
+# Create main window
 root = tk.Tk()
-app = PrescriptionFrame(master=root)
-app.mainloop()
+root.title("Medicine List")
+
+# Create form
+form = tk.Frame(root)
+form.pack()
+
+# Create initial row of fields
+name_label = tk.Label(form, text="Medicine 1 Name:")
+name_label.grid(row=1, column=0)
+name_entry = tk.Entry(form)
+name_entry.grid(row=1, column=1)
+
+price_label = tk.Label(form, text="Medicine 1 Price:")
+price_label.grid(row=1, column=2)
+price_entry = tk.Entry(form)
+price_entry.grid(row=1, column=3)
+
+type_label = tk.Label(form, text="Medicine 1 Type:")
+type_label.grid(row=1, column=4)
+type_entry = tk.Entry(form)
+type_entry.grid(row=1, column=5)
+
+medicine_list = [(name_label, name_entry, price_label, price_entry, type_label, type_entry)]
+
+# Bind tab key to add_row function when user is focused on the last field of the last row
+type_entry.bind("<Tab>", add_row)
+
+# Create button to remove last row
+remove_button = tk.Button(root, text="Remove Medicine", command=remove_row)
+remove_button.pack()
+
+root.mainloop()

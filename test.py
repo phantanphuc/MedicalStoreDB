@@ -1,96 +1,86 @@
 import tkinter as tk
-from tkinter import ttk
-from tkcalendar import DateEntry
+
+def add_row(event=None):
+    # Create new row
+    row = len(medicine_list) + 1
+
+    # Add name field
+    name_label = tk.Label(form, text=f"Medicine {row} Name:")
+    name_label.grid(row=row, column=0)
+    name_entry = tk.Entry(form)
+    name_entry.grid(row=row, column=1)
+
+    # Add price field
+    price_label = tk.Label(form, text=f"Medicine {row} Price:")
+    price_label.grid(row=row, column=2)
+    price_entry = tk.Entry(form)
+    price_entry.grid(row=row, column=3)
+
+    # Add type field
+    type_label = tk.Label(form, text=f"Medicine {row} Type:")
+    type_label.grid(row=row, column=4)
+    type_entry = tk.Entry(form)
+    type_entry.grid(row=row, column=5)
+
+    # Bind tab key to add_row function when user is focused on the last field of the last row
+    type_entry.bind("<Tab>", add_row)
+
+    # Add new medicine to list
+    medicine_list.append((name_label, name_entry, price_label, price_entry, type_label, type_entry))
+
+    # Set focus to first field of new row
+    name_entry.focus()
 
 
-class PatientForm(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.master = master
-        self.master.title("Patient Information Form")
-        self.pack()
-        self.create_widgets()
 
-    def create_widgets(self):
-        tk.Label(self, text="Patient Name").grid(row=0, column=0)
-        self.patient_name = tk.Entry(self)
-        self.patient_name.grid(row=0, column=1)
+def remove_row():
+    # Remove last row
+    if len(medicine_list) > 1:
+        name_label, name_entry, price_label, price_entry, type_label, type_entry = medicine_list.pop()
+        name_label.destroy()
+        name_entry.destroy()
+        price_label.destroy()
+        price_entry.destroy()
+        type_label.destroy()
+        type_entry.destroy()
 
-        tk.Label(self, text="Medical ID").grid(row=1, column=0)
-        self.medical_id = tk.Entry(self)
-        self.medical_id.grid(row=1, column=1)
+        # Set focus to last field of previous row
+        last_row = len(medicine_list)
+        if last_row > 0:
+            medicine_list[last_row - 1][2].focus()
 
-        tk.Label(self, text="Patient ID").grid(row=2, column=0)
-        self.patient_id = tk.Entry(self)
-        self.patient_id.grid(row=2, column=1)
-
-        tk.Label(self, text="Date of Birth").grid(row=3, column=0)
-        self.date_of_birth = DateEntry(self)
-        self.date_of_birth.grid(row=3, column=1)
-
-        tk.Label(self, text="Weight").grid(row=4, column=0)
-        self.weight = tk.Entry(self)
-        self.weight.grid(row=4, column=1)
-
-        tk.Label(self, text="Sex").grid(row=5, column=0)
-
-        # Create radio buttons for sex field
-        self.sex_var = tk.StringVar(value="Male")
-
-        male_radio_button = ttk.Radiobutton(
-            self,
-            text="Male",
-            variable=self.sex_var,
-            value="Male"
-        )
-
-        female_radio_button = ttk.Radiobutton(
-            self,
-            text="Female",
-            variable=self.sex_var,
-            value="Female"
-        )
-
-        male_radio_button.grid(row=5, column=1)
-        female_radio_button.grid(row=5, column=2)
-
-        tk.Label(self, text="Insurance ID").grid(row=6, column=0)
-        self.insurance_id = tk.Entry(self)
-        self.insurance_id.grid(row=6, column=1)
-
-        tk.Label(self, text="Guardian Information").grid(row=7, column=0)
-        self.guardian_info = tk.Entry(self)
-        self.guardian_info.grid(row=7, column=1)
-
-        tk.Label(self, text="Address").grid(row=8, column=0)
-        self.address = tk.Entry(self)
-        self.address.grid(row=8, column=1)
-
-    def get_form_values(self):
-        patient_name = self.patient_name.get()
-        medical_id = self.medical_id.get()
-        patient_id = self.patient_id.get()
-        date_of_birth = str(self.date_of_birth.get_date())
-        weight = self.weight.get()
-
-        sex = str(self.sex_var.get())
-
-        insurance_id = self.insurance_id.get()
-        guardian_info = self.guardian_info.get()
-        address = self.address.get()
-
-
+# Create main window
 root = tk.Tk()
-app = PatientForm(master=root)
-app.mainloop()
+root.title("Medicine List")
 
-# Get form values
-# patient_name = app.get_form_values()[0]
-# medical_id = app.get_form_values()[1]
-# patient_id = app.get_form_values()[2]
-# date_of_birth = app.get_form_values()[3]
-# weight = app.get_form_values()[4]
-# sex = app.get_form_values()[5]
-# insurance_id = app.get_form_values()[6]
-# guardian_info = app.get_form_values()[7]
-# address = app.get_form_values()[8]
+# Create form
+form = tk.Frame(root)
+form.pack()
+
+# Create initial row of fields
+name_label = tk.Label(form, text="Medicine 1 Name:")
+name_label.grid(row=1, column=0)
+name_entry = tk.Entry(form)
+name_entry.grid(row=1, column=1)
+
+price_label = tk.Label(form, text="Medicine 1 Price:")
+price_label.grid(row=1, column=2)
+price_entry = tk.Entry(form)
+price_entry.grid(row=1, column=3)
+
+type_label = tk.Label(form, text="Medicine 1 Type:")
+type_label.grid(row=1, column=4)
+type_entry = tk.Entry(form)
+type_entry.grid(row=1, column=5)
+
+medicine_list = [(name_label, name_entry, price_label, price_entry, type_label, type_entry)]
+
+# Create button to add new rows
+add_button = tk.Button(root, text="Add Medicine", command=add_row)
+add_button.pack()
+
+# Create button to remove last row
+remove_button = tk.Button(root, text="Remove Medicine", command=remove_row)
+remove_button.pack()
+
+root.mainloop()

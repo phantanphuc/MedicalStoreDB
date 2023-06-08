@@ -7,7 +7,7 @@ except ImportError:
     import tkFont as tkfont  # python 2
 
 from PIL import ImageTk, Image
-
+import AppManager
 
 def loadImage(path):
     _image = Image.open(path)
@@ -37,7 +37,7 @@ class MainmenuPage(tk.Frame):
         second_section.pack(side="top", fill="both", expand=True)
 
         add_prescription_img = loadImage("resources/AddPres.png")
-        add_prescription_button = tk.Button(second_section, image=add_prescription_img)
+        add_prescription_button = tk.Button(second_section, image=add_prescription_img, command=self.gotoAddPrescription)
         add_prescription_button.image = add_prescription_img
         add_prescription_button.pack(side="left")
 
@@ -90,3 +90,6 @@ class MainmenuPage(tk.Frame):
         sync_doctor_button = tk.Button(sixth_section, image=sync_doctor_img)
         sync_doctor_button.image = sync_doctor_img
         sync_doctor_button.pack(side="left")
+
+    def gotoAddPrescription(self):
+        AppManager.getAppManager().getFrame("AddPrescriptionForm").tkraise()
