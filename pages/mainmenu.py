@@ -6,6 +6,14 @@ except ImportError:
     import Tkinter as tk     # python 2
     import tkFont as tkfont  # python 2
 
+from PIL import ImageTk, Image
+
+
+def loadImage(path):
+    _image = Image.open(path)
+    _image = _image.resize((128, 128), Image.ANTIALIAS)
+    _image = ImageTk.PhotoImage(_image)
+    return _image
 
 class MainmenuPage(tk.Frame):
 
@@ -21,17 +29,64 @@ class MainmenuPage(tk.Frame):
         # self.root = tk.Tk()
         # self.geometry("300x200")
 
-        self.label1 = tk.Label(self, text="Username")
-        self.label1.place(x=50, y=50)
+        label1 = tk.Label(self, text="Prescription")
+        label1.pack(side="top")
 
-        self.entry1 = tk.Entry(self)
-        self.entry1.place(x=150, y=50)
+        # Second row
+        second_section = tk.Frame(self, bg="white", height=300)
+        second_section.pack(side="top", fill="both", expand=True)
 
-        self.label2 = tk.Label(self, text="Password")
-        self.label2.place(x=50, y=100)
+        add_prescription_img = loadImage("resources/AddPres.png")
+        add_prescription_button = tk.Button(second_section, image=add_prescription_img)
+        add_prescription_button.image = add_prescription_img
+        add_prescription_button.pack(side="left")
 
-        self.entry2 = tk.Entry(self, show="*")
-        self.entry2.place(x=150, y=100)
+        view_prescription_img = loadImage("resources/viewPres.png")
+        view_prescription_button = tk.Button(second_section, image=view_prescription_img)
+        view_prescription_button.image = view_prescription_img
+        view_prescription_button.pack(side="left")
 
-        self.button1 = tk.Button(self, text="Login", command=self.login)
-        self.button1.place(x=150, y=150)
+        sync_prescription_img = loadImage("resources/syncPres.png")
+        sync_prescription_button = tk.Button(second_section, image=sync_prescription_img)
+        sync_prescription_button.image = sync_prescription_img
+        sync_prescription_button.pack(side="left")
+
+        # Third row
+        label2 = tk.Label(self, text="Patients")
+        label2.pack(side="top")
+
+        # Fourth row
+        fourth_section = tk.Frame(self, bg="white", height=300)
+        fourth_section.pack(side="top", fill="both", expand=True)
+
+        view_patient_img = loadImage("resources/ViewPatient.png")
+        view_patient_button = tk.Button(fourth_section, image=view_patient_img)
+        view_patient_button.image = view_patient_img
+        view_patient_button.pack(side="left")
+
+        # Fifth row
+        # fifth_section = tk.Frame(self, bg="white", height=300)
+        # fifth_section.pack(side="top", fill="both", expand=True)
+
+        label3 = tk.Label(self, text="Doctor")
+        label3.pack(side="top")
+
+        # Sixth row
+
+        sixth_section = tk.Frame(self, bg="white", height=300)
+        sixth_section.pack(side="top", fill="both", expand=True)
+
+        add_doctor_img = loadImage("resources/AddDoctor.png")
+        add_doctor_button = tk.Button(sixth_section, image=add_doctor_img)
+        add_doctor_button.image = add_doctor_img
+        add_doctor_button.pack(side="left")
+
+        view_doctor_img = loadImage("resources/viewDoctor.png")
+        view_doctor_button = tk.Button(sixth_section, image=view_doctor_img)
+        view_doctor_button.image = view_doctor_img
+        view_doctor_button.pack(side="left")
+
+        sync_doctor_img = loadImage("resources/syncDoctor.png")
+        sync_doctor_button = tk.Button(sixth_section, image=sync_doctor_img)
+        sync_doctor_button.image = sync_doctor_img
+        sync_doctor_button.pack(side="left")

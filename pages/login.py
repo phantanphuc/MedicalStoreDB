@@ -12,8 +12,9 @@ class LoginPage(tk.Frame):
         username = self.entry1.get()
         password = self.entry2.get()
 
-        if username == "admin" and password == "password":
-            messagebox.showinfo("Login", "Login Successful")
+        if (username == "admin" and password == "admin") or True:
+            self.controller.show_frame("MainmenuPage")
+            # messagebox.showinfo("Login", "Login Successful")
         else:
             messagebox.showerror("Login", "Invalid Username or Password")
 
