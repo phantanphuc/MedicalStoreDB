@@ -5,8 +5,6 @@ except ImportError:
     import Tkinter as tk     # python 2
     import tkFont as tkfont  # python 2
 
-import pages.login as login
-import pages.mainmenu as mainmenu
 import AppManager
 
 
