@@ -9,11 +9,12 @@ except ImportError:
 from tkinter import ttk
 from tkcalendar import DateEntry
 
+from DataManager import getDataManager
 
 class AddPrescriptionForm(tk.Frame):
     def __init__(self, parent=None, controller=None):
         tk.Frame.__init__(self, parent)
-        self.entry_width = 100
+        self.entry_width = 140
         self.current_row = 0
         self.current_diagnose_count = 0
         self.current_medicine_count = 0
@@ -25,7 +26,11 @@ class AddPrescriptionForm(tk.Frame):
         self.last_medicine = None
         self.list_medicine = []
 
+        self.list_recommend_patient = []
+
         self.create_widgets()
+
+
 
     def add_row_diagnose(self, event=None):
         row_thres = 1
@@ -77,6 +82,51 @@ class AddPrescriptionForm(tk.Frame):
         self.last_diagnose = self.list_diagnose[-1][2]
         self.list_diagnose[-1][2].bind("<Tab>", self.add_row_diagnose)
 
+    def on_keyreleasePatientName(self, event):
+
+        value = event.widget.get()
+        value = value.strip().lower()
+
+        self.list_recommend_patient = getDataManager().searchPatient(value)
+        data = self.list_recommend_patient[:20]
+
+        queried_data = [x["ho_ten_benh_nhan"] + " (" + x["ma_dinh_danh_cong_dan"] + ")" for x in data]
+
+        self.comboboxPatient['values'] = sorted(queried_data, key=str.lower)
+        # self.comboboxPatient.event_generate('<<ComboboxSelected>>')
+
+    def on_selectPatient(self, event):
+        # print(self.comboboxPatient.get())
+        to_query = " ".join(self.comboboxPatient.get().split(" ")[:-1])
+
+        selected_value = [x for x in self.list_recommend_patient if x['ho_ten_benh_nhan'] == to_query]
+
+        if len(selected_value) > 0:
+            print("Selected value:", selected_value[0])
+            self.setPatientInfo(selected_value[0])
+
+        # combobox_update(data[:20])
+
+    def setPatientInfo(self, data):
+        self.comboboxPatient.delete(0, tk.END)
+        self.medical_id.delete(0, tk.END)
+        self.patient_id.delete(0, tk.END)
+        self.date_of_birth.delete(0, tk.END)
+        self.weight.delete(0, tk.END)
+        self.insurance_id.delete(0, tk.END)
+        self.guardian_info.delete(0, tk.END)
+        self.address.delete(0, tk.END)
+
+        self.comboboxPatient.set(data['ho_ten_benh_nhan'])
+        self.medical_id.insert(0, data['ma_dinh_danh_y_te'])
+        self.patient_id.insert(0, data['ma_dinh_danh_cong_dan'])
+        self.date_of_birth.insert(0, data['ngay_sinh_benh_nhan'])
+        self.weight.insert(0, data['can_nang'])
+        self.sex_var.set(data['gioi_tinh'])
+        self.insurance_id.insert(0, data['ma_so_the_bao_hiem_y_te'])
+        self.guardian_info.insert(0, data['thong_tin_nguoi_giam_ho'])
+        self.address.insert(0, data['dia_chi'])
+
 
     def create_widgets(self):
         # Create a frame for patient information
@@ -84,8 +134,14 @@ class AddPrescriptionForm(tk.Frame):
         patient_info_frame.grid(row=0, column=0, padx=10, pady=10)
 
         tk.Label(patient_info_frame, text="Tên bệnh nhân").grid(row=0, column=0)
-        self.patient_name = tk.Entry(patient_info_frame)
-        self.patient_name.grid(row=0, column=1)
+        # self.patient_name = tk.Entry(patient_info_frame)
+        # self.patient_name.grid(row=0, column=1)
+
+        entry_var = tk.StringVar()
+        self.comboboxPatient = ttk.Combobox(patient_info_frame, textvariable=entry_var)
+        self.comboboxPatient.grid(row=0, column=1)
+        self.comboboxPatient.bind('<KeyRelease>', self.on_keyreleasePatientName)
+        self.comboboxPatient.bind('<<ComboboxSelected>>', self.on_selectPatient)
 
         tk.Label(patient_info_frame, text="Định danh y tế").grid(row=1, column=0)
         self.medical_id = tk.Entry(patient_info_frame)
@@ -167,7 +223,7 @@ class AddPrescriptionForm(tk.Frame):
 
         tk.Label(self.prescription_info_frame, text='Lưu ý').grid(row=self.current_row, column=0, padx=5, pady=5)
         luu_y_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
-        luu_y_entry.grid(row=self.current_row, column=1, columnspan=6, padx=5, pady=5)
+        luu_y_entry.grid(row=self.current_row, column=1, columnspan=7, padx=5, pady=5)
 
         self.current_row = self.current_row + 1
 
@@ -243,6 +299,7 @@ class AddPrescriptionForm(tk.Frame):
         chu_ky_so_entry.grid(row=self.current_row,column=1, columnspan=6,padx=5,pady=5)
 
         self.add_row_diagnose()
+        self.add_row_medicine()
 
     def add_row_medicine(self, event=None):
         row_thres = self.current_diagnose_count + 6
