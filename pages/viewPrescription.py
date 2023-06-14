@@ -13,7 +13,7 @@ from PIL import ImageTk, Image
 from DataManager import getDataManager
 from common import *
 
-class AddPrescriptionForm(tk.Frame):
+class ViewPrescriptionForm(tk.Frame):
     def __init__(self, parent=None, controller=None):
         tk.Frame.__init__(self, parent)
         self.entry_width = 140

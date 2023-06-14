@@ -21,13 +21,24 @@ class DataManager:
     def insertMedicine(self, thuoc_data):
         self.thuoc_table.insert(thuoc_data)
 
-
     def searchPatient(self, keyword):
         keyword = keyword.lower()
-
+        Patient = Query()
         return self.patient_table.search(Patient.ho_ten_benh_nhan.test(self.test_contains, keyword) |
                                          Patient.ma_dinh_danh_cong_dan.test(self.test_contains, keyword) |
                                          Patient.ma_dinh_danh_y_te.test(self.test_contains, keyword))
+
+    def searchMedicine(self, keyword):
+        keyword = keyword.lower()
+        Medicine = Query()
+
+        return self.thuoc_table.search(Medicine.ten_thuoc.test(self.test_contains, keyword) |
+                                         Medicine.biet_duoc.test(self.test_contains, keyword))
+
+    def getMedicine(self, keyword):
+        Medicine = Query()
+        return self.thuoc_table.search(Medicine.ten_thuoc == keyword)
+
 
 data_manager = DataManager()
 
@@ -73,15 +84,48 @@ patient_data_3 = {'ho_ten_benh_nhan': 'Sarah Johnson',
 
 test_contains = lambda value, search: search in value.lower()
 
-Patient = Query()
+
 # results = data_manager.patient_table.search(Patient.ho_ten_benh_nhan == 'John')
 # results = data_manager.patient_table.search(Patient.ho_ten_benh_nhan.test(test_contains, 's'))
 
-results = data_manager.searchPatient("123")
+# results = data_manager.searchPatient("123")
+#
+# for res in results:
+#     print(res)
+# print(results)
+
+thuoc_data = [{'ma_thuoc': '123a',
+               'biet_duoc': 'X medical',
+               'ten_thuoc': 'A new Medicine',
+               'don_vi_tinh':'Cai',
+               'cach_dung':'Put in your mouth'},
+              {'ma_thuoc': '456b',
+               'biet_duoc': 'Y medical',
+               'ten_thuoc': 'B new Medicine',
+               'don_vi_tinh':'Cai',
+               'cach_dung':'Put in your nose'},
+              {'ma_thuoc': '789c',
+               'biet_duoc': 'Z medical',
+               'ten_thuoc': 'C new Medicine',
+               'don_vi_tinh':'Cai',
+               'cach_dung':'Put in your ear'},
+              {'ma_thuoc': '101d',
+               'biet_duoc': 'W medical',
+               'ten_thuoc': 'D new Medicine',
+               'don_vi_tinh':'Cai',
+               'cach_dung':'Put in your eye'}
+             ]
+
+
+# [data_manager.insertMedicine(x) for x in thuoc_data]
+
+# results = data_manager.searchMedicine("z")
+Medicine = Query()
+results = data_manager.getMedicine('C new Medicine')
 
 for res in results:
     print(res)
-# print(results)
+
 
 
 
