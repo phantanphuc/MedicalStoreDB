@@ -1,4 +1,16 @@
-from tinydb import TinyDB, Query
+from tinydb import TinyDB, Query, where
+
+
+def getDiseaseList():
+    return_value = {}
+    with open("./data/DanhSachBenh.csv", 'r', encoding="utf-8") as fin:
+        lines = fin.readlines()
+        for line in lines:
+            info = line.replace("\n", "").split("\t")
+            return_value[info[0].lower()] = (info[2], info[3])
+
+    return return_value
+
 
 class DataManager:
     def __init__(self):
@@ -8,6 +20,7 @@ class DataManager:
         self.danh_sach_thuoc_table = self.db.table('danh_sach_thuoc')
         self.thuoc_table = self.db.table('thuoc')
         self.test_contains = lambda value, search: search in value.lower()
+        self.list_disease = getDiseaseList()
 
     def insertPatient(self, patient_data):
         self.patient_table.insert(patient_data)
@@ -38,6 +51,43 @@ class DataManager:
     def getMedicine(self, keyword):
         Medicine = Query()
         return self.thuoc_table.search(Medicine.ten_thuoc == keyword)
+
+    def getDiseaseFromID(self, disease_id):
+        if disease_id in self.list_disease:
+            return self.list_disease[disease_id]
+        else:
+            return ""
+
+    def inserPrescription(self, data):
+        patient_data = {'ho_ten_benh_nhan': data['patientName'],
+                        'ma_dinh_danh_y_te': data['medical_id'],
+                        'ma_dinh_danh_cong_dan': data['patient_id'],
+                        'ngay_sinh_benh_nhan': data['date_of_birth'],
+                        'can_nang': data['weight'],
+                        'gioi_tinh': data['sex_var'],
+                        'ma_so_the_bao_hiem_y_te': data['insurance_id'],
+                        'thong_tin_nguoi_giam_ho': data['guardian_info'],
+                        'dia_chi': data['address']}
+
+        # data = {
+        #     'patientName': self.comboboxPatient.get(),
+        #     'medical_id': self.medical_id.get(),
+        #     'patient_id': self.patient_id.get(),
+        #     'date_of_birth': self.date_of_birth.get(),
+        #     'weight': self.weight.get(),
+        #     'sex_var': self.sex_var.get(),
+        #     'insurance_id': self.insurance_id.get(),
+        #     'guardian_info': self.guardian_info.get(),
+        #     'chandoan': [x.get() for x in self.list_diagnose],
+        #     'luu_y': self.luu_y_entry.get(),
+        #     'hinh_thuc_dieu_tri': self.hinh_thuc_dieu_tri_entry.get(),
+        #     'dot_dung_thuoc': self.dot_dung_thuoc_entry.get(),
+        #     'don_thuoc': [x.get() for x in self.list_medicine],
+        #     'loi_dan_entry': self.loi_dan_entry.get(),
+        #     'ngay_tai_kham': self.ngay_tai_kham_entry.get(),
+        #     'ngay_gio_ke_don': self.ngay_gio_ke_don_entry.get(),
+        #     'chu_ky_so': self.chu_ky_so_entry.get(),
+        # }
 
 
 data_manager = DataManager()
@@ -125,7 +175,4 @@ results = data_manager.getMedicine('C new Medicine')
 
 for res in results:
     print(res)
-
-
-
 

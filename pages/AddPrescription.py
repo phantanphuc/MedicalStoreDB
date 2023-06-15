@@ -33,7 +33,12 @@ class AddPrescriptionForm(tk.Frame):
 
         self.create_widgets()
 
-
+    def dianoseIDClickOut(self, event):
+        input_id = event.widget.get()
+        if input_id != '':
+            disease_name = getDataManager().getDiseaseFromID(input_id.lower())
+            self.list_diagnose[event.widget.row_index][1].delete(0, tk.END)
+            self.list_diagnose[event.widget.row_index][1].insert(0, disease_name[1])
 
     def add_row_diagnose(self, event=None):
         row_thres = 1
@@ -44,6 +49,8 @@ class AddPrescriptionForm(tk.Frame):
 
         ma_chan_doan_entry = tk.Entry(self.prescription_info_frame)
         ma_chan_doan_entry.grid(row=row_thres + self.current_diagnose_count, column=1)
+        ma_chan_doan_entry.bind("<FocusOut>", self.dianoseIDClickOut)
+        ma_chan_doan_entry.row_index = self.current_diagnose_count
 
         # Add price field
         ten_chan_doan_entry = tk.Entry(self.prescription_info_frame)
@@ -98,8 +105,32 @@ class AddPrescriptionForm(tk.Frame):
         self.comboboxPatient['values'] = sorted(queried_data, key=str.lower)
         # self.comboboxPatient.event_generate('<<ComboboxSelected>>')
 
+    def DEBUGSetDummyValue(self):
+        print("DEBUG")
+        selected_value = getDataManager().searchPatient("Sarah")
+        self.setPatientInfo(selected_value[0])
+        self.add_row_medicine()
+        self.setMedicineInfo(0, getDataManager().getMedicine('D new Medicine')[0])
+        self.setMedicineInfo(1, getDataManager().getMedicine('A new Medicine')[0])
+        self.list_diagnose[0][0].insert(0, "ZX12")
+        self.list_diagnose[0][1].insert(0, "Đau Bụng")
+        self.list_diagnose[0][2].insert(0, "CHECK")
+
+        self.list_medicine[0][3].insert(0, "10")
+        self.list_medicine[1][3].insert(0, "15")
+
+        self.luu_y_entry.insert(0, "nhớ uống thuốc")
+        self.hinh_thuc_dieu_tri_entry.insert(0, "uống thuốc")
+        self.dot_dung_thuoc_entry.insert(0, "4")
+        self.loi_dan_entry.insert(0, "nhớ uống thuốc 2")
+        self.so_dien_thoai_nguoi_kham_benh_entry.insert(0, "0912121212")
+        self.ngay_tai_kham_entry.insert(0, "12/06/2024")
+        self.ngay_gio_ke_don_entry.insert(0, "12/06/2023")
+        self.chu_ky_so_entry.insert(0, "XYR")
+
+
+
     def on_selectPatient(self, event):
-        # print(self.comboboxPatient.get())
         to_query = " ".join(self.comboboxPatient.get().split(" ")[:-1])
 
         selected_value = [x for x in self.list_recommend_patient if x['ho_ten_benh_nhan'] == to_query]
@@ -129,7 +160,6 @@ class AddPrescriptionForm(tk.Frame):
         self.insurance_id.insert(0, data['ma_so_the_bao_hiem_y_te'])
         self.guardian_info.insert(0, data['thong_tin_nguoi_giam_ho'])
         self.address.insert(0, data['dia_chi'])
-
 
     def create_widgets(self):
         # Create a frame for patient information
@@ -209,6 +239,10 @@ class AddPrescriptionForm(tk.Frame):
         saveonly_button.image = saveonly_img
         saveonly_button.grid(row=0, column=1)
 
+        debug_img = loadImage("resources/test.png")
+        debug_button = tk.Button(button_frame, image=debug_img, command=self.DEBUGSetDummyValue)
+        debug_button.image = debug_img
+        debug_button.grid(row=0, column=3)
 
         # Create a frame for prescription information
 
@@ -237,26 +271,28 @@ class AddPrescriptionForm(tk.Frame):
 
         self.current_row = 2
 
-
         tk.Label(self.prescription_info_frame, text='Lưu ý').grid(row=self.current_row, column=0, padx=5, pady=5)
-        luu_y_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
-        luu_y_entry.grid(row=self.current_row, column=1, columnspan=7, padx=5, pady=5)
+        self.luu_y_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
+        self.luu_y_entry.grid(row=self.current_row, column=1, columnspan=7, padx=5, pady=5)
 
         self.current_row = self.current_row + 1
 
-        tk.Label(self.prescription_info_frame, text='Hình thức điều trị').grid(row=self.current_row, column=0, padx=5, pady=5)
-        hinh_thuc_dieu_tri_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
-        hinh_thuc_dieu_tri_entry.grid(row= self.current_row,column = 1, columnspan=6,padx = 5,pady = 5)
+        tk.Label(self.prescription_info_frame, text='Hình thức điều trị').grid(row=self.current_row, column=0, padx=5,
+                                                                               pady=5)
+        self.hinh_thuc_dieu_tri_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
+        self.hinh_thuc_dieu_tri_entry.grid(row=self.current_row, column=1, columnspan=6, padx=5, pady=5)
 
         self.current_row = self.current_row + 1
 
-        tk.Label(self.prescription_info_frame,text='Đợt dùng thuốc').grid(row = self.current_row,column = 0,padx = 5,pady = 5)
-        dot_dung_thuoc_entry = tk.Entry(self.prescription_info_frame,width = self.entry_width)
-        dot_dung_thuoc_entry.grid(row = self.current_row,column = 1, columnspan=6,padx = 5,pady = 5)
+        tk.Label(self.prescription_info_frame, text='Đợt dùng thuốc').grid(row=self.current_row, column=0, padx=5,
+                                                                           pady=5)
+        self.dot_dung_thuoc_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
+        self.dot_dung_thuoc_entry.grid(row=self.current_row, column=1, columnspan=6, padx=5, pady=5)
 
         self.current_row = self.current_row + 1
 
-        tk.Label(self.prescription_info_frame,text='Thông tin đơn thuốc').grid(row = self.current_row,column = 0,padx = 5,pady = 5)
+        tk.Label(self.prescription_info_frame, text='Thông tin đơn thuốc').grid(row=self.current_row, column=0, padx=5,
+                                                                                pady=5)
 
         ma_thuoc = tk.Label(self.prescription_info_frame, text="Mã thuốc")
         ma_thuoc.grid(row=self.current_row, column=1)
@@ -287,33 +323,36 @@ class AddPrescriptionForm(tk.Frame):
 
         self.current_row = self.current_row + 1
 
-        tk.Label(self.prescription_info_frame,text='Lời dặn').grid(row = self.current_row,column = 0,padx = 5,pady = 5)
-        loi_dan_entry = tk.Entry(self.prescription_info_frame,width = self.entry_width)
-        loi_dan_entry.grid(row = self.current_row,column = 1, columnspan=6,padx = 5,pady = 5)
+        tk.Label(self.prescription_info_frame, text='Lời dặn').grid(row=self.current_row, column=0, padx=5, pady=5)
+        self.loi_dan_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
+        self.loi_dan_entry.grid(row=self.current_row, column=1, columnspan=6, padx=5, pady=5)
 
         self.current_row = self.current_row + 1
 
-        tk.Label(self.prescription_info_frame,text='Số điện thoại người khám bệnh').grid(row=self.current_row,column=0,padx=5,pady=5)
-        so_dien_thoai_nguoi_kham_benh_entry=tk.Entry(self.prescription_info_frame,width=self.entry_width)
-        so_dien_thoai_nguoi_kham_benh_entry.grid(row=self.current_row,column=1, columnspan=6,padx=5,pady=5)
+        tk.Label(self.prescription_info_frame, text='Số điện thoại người khám bệnh').grid(row=self.current_row,
+                                                                                          column=0, padx=5, pady=5)
+        self.so_dien_thoai_nguoi_kham_benh_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
+        self.so_dien_thoai_nguoi_kham_benh_entry.grid(row=self.current_row, column=1, columnspan=6, padx=5, pady=5)
 
         self.current_row = self.current_row + 1
 
-        tk.Label(self.prescription_info_frame,text='Ngày tái khám').grid(row=self.current_row,column=0,padx=5,pady=5)
-        ngay_tai_kham_entry=DateEntry(self.prescription_info_frame,width=12,date_pattern='dd/mm/yyyy')
-        ngay_tai_kham_entry.grid(row=self.current_row,column=1,padx=5,pady=5)
+        tk.Label(self.prescription_info_frame, text='Ngày tái khám').grid(row=self.current_row, column=0, padx=5,
+                                                                          pady=5)
+        self.ngay_tai_kham_entry = DateEntry(self.prescription_info_frame, width=12, date_pattern='dd/mm/yyyy')
+        self.ngay_tai_kham_entry.grid(row=self.current_row, column=1, padx=5, pady=5)
 
         self.current_row = self.current_row + 1
 
-        tk.Label(self.prescription_info_frame,text='Ngày giờ kê đơn').grid(row=self.current_row,column=0,padx=5,pady=5)
-        ngay_gio_ke_don_entry=DateEntry(self.prescription_info_frame,width=12,date_pattern='dd/mm/yyyy')
-        ngay_gio_ke_don_entry.grid(row=self.current_row,column=1,padx=5,pady=5)
+        tk.Label(self.prescription_info_frame, text='Ngày giờ kê đơn').grid(row=self.current_row, column=0, padx=5,
+                                                                            pady=5)
+        self.ngay_gio_ke_don_entry = DateEntry(self.prescription_info_frame, width=12, date_pattern='dd/mm/yyyy')
+        self.ngay_gio_ke_don_entry.grid(row=self.current_row, column=1, padx=5, pady=5)
 
         self.current_row = self.current_row + 1
 
-        tk.Label(self.prescription_info_frame,text='Chữ ký số').grid(row=self.current_row,column=0,padx=5,pady=5)
-        chu_ky_so_entry=tk.Entry(self.prescription_info_frame,width=self.entry_width)
-        chu_ky_so_entry.grid(row=self.current_row,column=1, columnspan=6,padx=5,pady=5)
+        tk.Label(self.prescription_info_frame, text='Chữ ký số').grid(row=self.current_row, column=0, padx=5, pady=5)
+        self.chu_ky_so_entry = tk.Entry(self.prescription_info_frame, width=self.entry_width)
+        self.chu_ky_so_entry.grid(row=self.current_row, column=1, columnspan=6, padx=5, pady=5)
 
         self.add_row_diagnose()
         self.add_row_medicine()
@@ -324,7 +363,6 @@ class AddPrescriptionForm(tk.Frame):
         for widget in self.prescription_info_frame.grid_slaves():
             if widget.grid_info()['row'] >= row_thres + self.current_medicine_count:
                 widget.grid(row=widget.grid_info()['row'] + 1, column=widget.grid_info()['column'])
-
 
         ma_thuoc_entry = tk.Entry(self.prescription_info_frame)
         ma_thuoc_entry.grid(row=row_thres + self.current_medicine_count, column=1)
@@ -420,5 +458,30 @@ class AddPrescriptionForm(tk.Frame):
         to_update_row[2].insert(0, value['ten_thuoc'])
         to_update_row[3].insert(0, value['don_vi_tinh'])
         to_update_row[5].insert(0, value['cach_dung'])
+
+    def savePrescription(self):
+
+        data = {
+            'patientName': self.comboboxPatient.get(),
+            'medical_id': self.medical_id.get(),
+            'patient_id': self.patient_id.get(),
+            'date_of_birth': self.date_of_birth.get(),
+            'weight': self.weight.get(),
+            'sex_var': self.sex_var.get(),
+            'insurance_id': self.insurance_id.get(),
+            'guardian_info': self.guardian_info.get(),
+            'address': self.address.get(),
+            'chandoan': [x.get() for x in self.list_diagnose],
+            'luu_y': self.luu_y_entry.get(),
+            'hinh_thuc_dieu_tri': self.hinh_thuc_dieu_tri_entry.get(),
+            'dot_dung_thuoc': self.dot_dung_thuoc_entry.get(),
+            'don_thuoc': [x.get() for x in self.list_medicine],
+            'loi_dan_entry': self.loi_dan_entry.get(),
+            'ngay_tai_kham': self.ngay_tai_kham_entry.get(),
+            'ngay_gio_ke_don': self.ngay_gio_ke_don_entry.get(),
+            'chu_ky_so': self.chu_ky_so_entry.get(),
+        }
+
+
 
 
