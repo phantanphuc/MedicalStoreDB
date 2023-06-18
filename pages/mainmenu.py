@@ -42,7 +42,7 @@ class MainmenuPage(tk.Frame):
         add_prescription_button.pack(side="left")
 
         view_prescription_img = loadImage("resources/viewPres.png")
-        view_prescription_button = tk.Button(second_section, image=view_prescription_img)
+        view_prescription_button = tk.Button(second_section, image=view_prescription_img, command=self.gotoViewPrescription)
         view_prescription_button.image = view_prescription_img
         view_prescription_button.pack(side="left")
 
@@ -93,3 +93,7 @@ class MainmenuPage(tk.Frame):
 
     def gotoAddPrescription(self):
         AppManager.getAppManager().getFrame("AddPrescriptionForm").tkraise()
+
+    def gotoViewPrescription(self):
+        AppManager.getAppManager().getFrame("ViewPrescriptionForm").tkraise()
+

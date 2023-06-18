@@ -1,9 +1,14 @@
 from tinydb import TinyDB, Query, where
-
+import os
 
 def getDiseaseList():
     return_value = {}
-    with open("./data/DanhSachBenh.csv", 'r', encoding="utf-8") as fin:
+    if os.path.isfile("./../data/DanhSachBenh.csv"):
+        open_path = "./../data/DanhSachBenh.csv"
+    else:
+        open_path = "./data/DanhSachBenh.csv"
+
+    with open(open_path, 'r', encoding="utf-8") as fin:
         lines = fin.readlines()
         for line in lines:
             info = line.replace("\n", "").split("\t")
@@ -17,19 +22,28 @@ class DataManager:
         self.db = TinyDB('Database.json')
         self.patient_table = self.db.table('benh_nhan')
         self.don_thuoc_table = self.db.table('don_thuoc')
-        self.danh_sach_thuoc_table = self.db.table('danh_sach_thuoc')
+        # self.danh_sach_thuoc_table = self.db.table('danh_sach_thuoc')
         self.thuoc_table = self.db.table('thuoc')
         self.test_contains = lambda value, search: search in value.lower()
         self.list_disease = getDiseaseList()
 
     def insertPatient(self, patient_data):
+        qpatient = Query()
+        condition = (qpatient.ho_ten_benh_nhan == patient_data['ho_ten_benh_nhan']) & \
+                    (qpatient.ngay_sinh_benh_nhan == patient_data['ngay_sinh_benh_nhan'])
+        results = self.patient_table.search(condition)
+
+        patient_data['ID'] = patient_data['ho_ten_benh_nhan'] + "_" \
+                             + patient_data['ngay_sinh_benh_nhan'] + "_" + str(len(results))
+
         self.patient_table.insert(patient_data)
+        return patient_data['ID']
 
     def insertPrescription(self, don_thuoc_data):
         self.don_thuoc_table.insert(don_thuoc_data)
 
-    def insertMedicineList(self, danh_sach_thuoc_data):
-        self.danh_sach_thuoc_table.insert(danh_sach_thuoc_data)
+    # def insertMedicineList(self, danh_sach_thuoc_data):
+    #     self.danh_sach_thuoc_table.insert(danh_sach_thuoc_data)
 
     def insertMedicine(self, thuoc_data):
         self.thuoc_table.insert(thuoc_data)
@@ -58,6 +72,15 @@ class DataManager:
         else:
             return ""
 
+    def searchDiseaseFromName(self, name):
+        name = name.lower()
+        return_value = []
+        for key in self.list_disease.keys():
+            node = self.list_disease[key]
+            if name in node[0] or name in node[1]:
+                return_value.append((key.capitalize(), node[1]))
+        return return_value
+
     def inserPrescription(self, data):
         patient_data = {'ho_ten_benh_nhan': data['patientName'],
                         'ma_dinh_danh_y_te': data['medical_id'],
@@ -68,6 +91,31 @@ class DataManager:
                         'ma_so_the_bao_hiem_y_te': data['insurance_id'],
                         'thong_tin_nguoi_giam_ho': data['guardian_info'],
                         'dia_chi': data['address']}
+
+        prescription_data = {'chan_doan': [(x[0].get(), x[2].get()) for x in data['chandoan']],
+                             'luu_y': data['luu_y'],
+                             'hinh_thuc_dieu_tri': data['hinh_thuc_dieu_tri'],
+                             'dot_dung_thuoc': data['dot_dung_thuoc'],
+                             'don_thuoc': [(x[0].get(), x[4].get()) for x in data['don_thuoc']],
+                             'loi_dan': data['loi_dan_entry'],
+                             'ngay_tai_kham': data['ngay_tai_kham'],
+                             'ngay_gio_ke_don': data['ngay_gio_ke_don'],
+                             'chu_ky_so': data['chu_ky_so']}
+
+        # check exist
+        qpatient = Query()
+        condition = (qpatient.ho_ten_benh_nhan == data['patientName']) & \
+                    (qpatient.ngay_sinh_benh_nhan == data['date_of_birth'])
+        results = self.patient_table.search(condition)
+
+        if len(results) > 0: # TODO Check condition if exist multiple patient
+            self.patient_table.update(patient_data, condition)
+            prescription_data['patient'] = results[0]['ID']
+        else:
+            patient_id = self.insertPatient(patient_data)
+            prescription_data['patient'] = patient_id
+
+        self.don_thuoc_table.insert(prescription_data)
 
         # data = {
         #     'patientName': self.comboboxPatient.get(),
@@ -89,6 +137,9 @@ class DataManager:
         #     'chu_ky_so': self.chu_ky_so_entry.get(),
         # }
 
+    def getAllPrescription(self):
+        return self.patient_table.all() #TODO filter and sort by time
+
 
 data_manager = DataManager()
 
@@ -100,7 +151,7 @@ def getDataManager():
 patient_data = {'ho_ten_benh_nhan': 'John Doe',
                 'ma_dinh_danh_y_te': '123456789',
                 'ma_dinh_danh_cong_dan': '987654321',
-                'ngay_sinh_benh_nhan': '01/01/2000',
+                'ngay_sinh_benh_nhan': '1/1/2000',
                 'can_nang': 70,
                 'gioi_tinh': 'Nam',
                 'ma_so_the_bao_hiem_y_te': '1234567890',
@@ -128,21 +179,36 @@ patient_data_3 = {'ho_ten_benh_nhan': 'Sarah Johnson',
                   'dia_chi': '43432 adsa'}
 
 
+# data_manager.patient_table.truncate()
+#
 # data_manager.insertPatient(patient_data)
 # data_manager.insertPatient(patient_data_2)
 # data_manager.insertPatient(patient_data_3)
 
-test_contains = lambda value, search: search in value.lower()
+# test_contains = lambda value, search: search in value.lower()
 
+# Patient = Query()
+# results = data_manager.don_thuoc_table\
+#     .search((Query().patient_id == 'John Smith') & (Patient.ngay_sinh_benh_nhan == '05/20/1975'))
+# print(results)
+# data_manager.don_thuoc_table.truncate()
+# print(data_manager.don_thuoc_table.all())
+
+# data_manager.don_thuoc_table.truncate()
 
 # results = data_manager.patient_table.search(Patient.ho_ten_benh_nhan == 'John')
 # results = data_manager.patient_table.search(Patient.ho_ten_benh_nhan.test(test_contains, 's'))
 
 # results = data_manager.searchPatient("123")
 #
-# for res in results:
+# for res in data_manager.patient_table.all():
 #     print(res)
 # print(results)
+
+for res in data_manager.don_thuoc_table.all():
+    print(res)
+
+# data_manager.don_thuoc_table.truncate()
 
 thuoc_data = [{'ma_thuoc': '123a',
                'biet_duoc': 'X medical',
@@ -167,12 +233,18 @@ thuoc_data = [{'ma_thuoc': '123a',
              ]
 
 
+
 # [data_manager.insertMedicine(x) for x in thuoc_data]
 
 # results = data_manager.searchMedicine("z")
-Medicine = Query()
-results = data_manager.getMedicine('C new Medicine')
+# Medicine = Query()
+# results = data_manager.getMedicine('C new Medicine')
+#
+# for res in results:
+#     print(res)
 
-for res in results:
-    print(res)
+# print(data_manager.searchDiseaseFromName("flu"))
+
+
+
 
