@@ -138,8 +138,16 @@ class DataManager:
         # }
 
     def getAllPrescription(self):
-        return self.patient_table.all() #TODO filter and sort by time
+        return self.don_thuoc_table.all() #TODO filter and sort by time
 
+    def setPatientInfoToPrescription(self, list_pres):
+        print(list_pres)
+        return_value = []
+        for pres in list_pres:
+            patient_info = self.patient_table.search(Query().ID == pres['patient'])[0]
+            return_value.append({**pres, **patient_info})
+
+        return return_value
 
 data_manager = DataManager()
 

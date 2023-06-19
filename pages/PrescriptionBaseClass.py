@@ -279,7 +279,7 @@ class PrescriptionBaseClass(tk.Frame):
         # Create a frame for prescription information
 
         self.prescription_info_frame = tk.LabelFrame(self, text='Prescription Information')
-        self.prescription_info_frame.grid(row=0, column=1, padx=10, pady=10, rowspan=2)
+        self.prescription_info_frame.grid(row=0, column=1, padx=10, pady=10, rowspan=3)
 
         tk.Label(self.prescription_info_frame, text='Chẩn đoán').grid(row=0, column=0, padx=5, pady=5)
         # chan_doan_entry = tk.Entry(self.prescription_info_frame, width=50)
