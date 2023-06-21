@@ -12,7 +12,7 @@ from PIL import ImageTk, Image
 
 from DataManager import getDataManager
 from common import *
-
+import AppManager
 
 class PrescriptionBaseClass(tk.Frame):
     def __init__(self, parent=None, controller=None):
@@ -102,6 +102,7 @@ class PrescriptionBaseClass(tk.Frame):
 
     def remove_row_diagnose(self, event=None):
         if self.current_diagnose_count <= 1:
+            [x.delete(0, tk.END) for x in self.list_diagnose[-1]]
             return
         row_thres = 1
 
@@ -193,6 +194,9 @@ class PrescriptionBaseClass(tk.Frame):
         self.guardian_info.insert(0, data['thong_tin_nguoi_giam_ho'])
         self.address.insert(0, data['dia_chi'])
 
+    def back(self):
+        AppManager.getAppManager().getFrame("MainmenuPage").tkraise()
+
     def create_widgets(self):
         # Create a frame for patient information
         patient_info_frame = tk.LabelFrame(self, text="Patient Information")
@@ -261,20 +265,25 @@ class PrescriptionBaseClass(tk.Frame):
         self.button_frame = tk.LabelFrame(self)
         self.button_frame.grid(row=1, column=0, padx=10, pady=10)
 
-        savesync_img = loadImage("resources/savesync.png")
+        savesync_img = loadImage("resources/savesync.png", 96)
         savesync_button = tk.Button(self.button_frame, image=savesync_img)
         savesync_button.image = savesync_img
         savesync_button.grid(row=0, column=0)
 
-        saveonly_img = loadImage("resources/save.png")
+        saveonly_img = loadImage("resources/save.png", 96)
         saveonly_button = tk.Button(self.button_frame, image=saveonly_img, command=self.savePrescription)
         saveonly_button.image = saveonly_img
         saveonly_button.grid(row=0, column=1)
 
-        debug_img = loadImage("resources/test.png")
+        debug_img = loadImage("resources/test.png", 96)
         debug_button = tk.Button(self.button_frame, image=debug_img, command=self.DEBUGSetDummyValue)
         debug_button.image = debug_img
         debug_button.grid(row=0, column=3)
+
+        back_img = loadImage("resources/backbutton.png", 96)
+        back_button = tk.Button(self.button_frame, image=back_img, command=self.back)
+        back_button.image = back_img
+        back_button.grid(row=0, column=4)
 
         # Create a frame for prescription information
 
@@ -402,9 +411,6 @@ class PrescriptionBaseClass(tk.Frame):
         biet_duoc_entry = tk.Entry(self.prescription_info_frame)
         biet_duoc_entry.grid(row=row_thres + self.current_medicine_count, column=2)
 
-        ten_thuoc_entry = tk.Entry(self.prescription_info_frame)
-        ten_thuoc_entry.grid(row=row_thres + self.current_medicine_count, column=3)
-
         ten_thuoc_entry = ttk.Combobox(self.prescription_info_frame)
         ten_thuoc_entry.grid(row=row_thres + self.current_medicine_count, column=3)
         ten_thuoc_entry.bind('<KeyRelease>', self.on_keyreleaseMedicineName)
@@ -434,6 +440,7 @@ class PrescriptionBaseClass(tk.Frame):
 
     def remove_row_medicine(self, event=None):
         if self.current_medicine_count <= 1:
+            [x.delete(0, tk.END) for x in self.list_medicine[-1]]
             return
 
         row_thres = self.current_diagnose_count + 6
@@ -510,8 +517,43 @@ class PrescriptionBaseClass(tk.Frame):
             'ngay_tai_kham': self.ngay_tai_kham_entry.get(),
             'ngay_gio_ke_don': self.ngay_gio_ke_don_entry.get(),
             'chu_ky_so': self.chu_ky_so_entry.get(),
+            'sdt_nguoi_kham': self.so_dien_thoai_nguoi_kham_benh_entry.get()
         }
 
+        print(data)
+
         getDataManager().inserPrescription(data)
+
+    def resetDianoseAndMedicineList(self):
+        for i in range(len(self.list_medicine)):
+            self.remove_row_medicine()
+
+        for i in range(len(self.list_diagnose)):
+            self.remove_row_diagnose()
+
+    def resetAll(self):
+        self.resetDianoseAndMedicineList()
+
+        self.luu_y_entry.delete(0, tk.END)
+        self.hinh_thuc_dieu_tri_entry.delete(0, tk.END)
+        self.dot_dung_thuoc_entry.delete(0, tk.END)
+        self.loi_dan_entry.delete(0, tk.END)
+        self.so_dien_thoai_nguoi_kham_benh_entry.delete(0, tk.END)
+        self.ngay_tai_kham_entry.delete(0, tk.END)
+        self.ngay_gio_ke_don_entry.delete(0, tk.END)
+        self.chu_ky_so_entry.delete(0, tk.END)
+
+        self.comboboxPatient.delete(0, tk.END)
+        self.medical_id.delete(0, tk.END)
+        self.patient_id.delete(0, tk.END)
+        self.date_of_birth.delete(0, tk.END)
+        self.weight.delete(0, tk.END)
+        self.insurance_id.delete(0, tk.END)
+        self.guardian_info.delete(0, tk.END)
+        self.address.delete(0, tk.END)
+
+    # def on_visibility(self, event):
+    #     self.resetAll()
+    #     print("showframe")
 
 

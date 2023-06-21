@@ -66,9 +66,13 @@ class DataManager:
         Medicine = Query()
         return self.thuoc_table.search(Medicine.ten_thuoc == keyword)
 
+    def getMedicineByID(self, keyword):
+        Medicine = Query()
+        return self.thuoc_table.search(Medicine.ma_thuoc == keyword)
+
     def getDiseaseFromID(self, disease_id):
-        if disease_id in self.list_disease:
-            return self.list_disease[disease_id]
+        if disease_id.lower() in self.list_disease:
+            return self.list_disease[disease_id.lower()]
         else:
             return ""
 
@@ -141,7 +145,7 @@ class DataManager:
         return self.don_thuoc_table.all() #TODO filter and sort by time
 
     def setPatientInfoToPrescription(self, list_pres):
-        print(list_pres)
+        # print(list_pres)
         return_value = []
         for pres in list_pres:
             patient_info = self.patient_table.search(Query().ID == pres['patient'])[0]
@@ -213,8 +217,8 @@ patient_data_3 = {'ho_ten_benh_nhan': 'Sarah Johnson',
 #     print(res)
 # print(results)
 
-for res in data_manager.don_thuoc_table.all():
-    print(res)
+# for res in data_manager.don_thuoc_table.all():
+#     print(res)
 
 # data_manager.don_thuoc_table.truncate()
 
@@ -253,6 +257,5 @@ thuoc_data = [{'ma_thuoc': '123a',
 
 # print(data_manager.searchDiseaseFromName("flu"))
 
-
-
-
+# print(data_manager.getDiseaseFromID("A03"))
+# data_manager.don_thuoc_table.truncate()

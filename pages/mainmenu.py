@@ -92,8 +92,10 @@ class MainmenuPage(tk.Frame):
         sync_doctor_button.pack(side="left")
 
     def gotoAddPrescription(self):
+        AppManager.getAppManager().getFrame("AddPrescriptionForm").resetAll()
         AppManager.getAppManager().getFrame("AddPrescriptionForm").tkraise()
 
     def gotoViewPrescription(self):
+        AppManager.getAppManager().getFrame("ViewPrescriptionForm").resetAll()
         AppManager.getAppManager().getFrame("ViewPrescriptionForm").tkraise()
 
