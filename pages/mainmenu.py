@@ -97,5 +97,6 @@ class MainmenuPage(tk.Frame):
 
     def gotoViewPrescription(self):
         AppManager.getAppManager().getFrame("ViewPrescriptionForm").resetAll()
+        AppManager.getAppManager().getFrame("ViewPrescriptionForm").updatePrescriptionListbox()
         AppManager.getAppManager().getFrame("ViewPrescriptionForm").tkraise()
 

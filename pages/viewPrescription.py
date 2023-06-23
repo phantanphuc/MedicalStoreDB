@@ -29,8 +29,17 @@ class ViewPrescriptionForm(PrescriptionBaseClass.PrescriptionBaseClass):
         selected_data = self.prescription_list[index]
         self.setPrescriptionData(selected_data)
 
-    def updateAllScrollBar(self):
-        pass
+    def updatePrescriptionListbox(self):
+        self.prescription_listbox.delete(0,tk.END)
+
+        self.prescription_list = getDataManager().setPatientInfoToPrescription(getDataManager().getAllPrescription())
+        self.prescription_display_list = [x['ho_ten_benh_nhan'] for x in self.prescription_list]
+
+        # for i in range(20):
+        for item in self.prescription_display_list:
+            self.prescription_listbox.insert(tk.END, item)
+
+        self.prescription_listbox.bind('<<ListboxSelect>>', self.on_prescription_select)
 
     def addViewPrescriptionWidget(self):
 
@@ -50,14 +59,7 @@ class ViewPrescriptionForm(PrescriptionBaseClass.PrescriptionBaseClass):
         self.prescription_listbox = tk.Listbox(self.list_prescription_frame, width=60, yscrollcommand=self.search_pres_scrollbar.set)
         self.prescription_listbox.grid(row=1, column=0, columnspan=3)
 
-        self.prescription_list = getDataManager().setPatientInfoToPrescription(getDataManager().getAllPrescription())
-        self.prescription_display_list = [x['ho_ten_benh_nhan'] for x in self.prescription_list]
-
-        # for i in range(20):
-        for item in self.prescription_display_list:
-            self.prescription_listbox.insert(tk.END, item)
-
-        self.prescription_listbox.bind('<<ListboxSelect>>', self.on_prescription_select)
+        self.updatePrescriptionListbox()
 
 
     def setPrescriptionData(self, display_data):
@@ -87,8 +89,6 @@ class ViewPrescriptionForm(PrescriptionBaseClass.PrescriptionBaseClass):
             self.setMedicineInfo(i, getDataManager().getMedicineByID(display_data['don_thuoc'][i][0])[0])
             self.list_medicine[i][4].delete(0, tk.END)
             self.list_medicine[i][4].insert(0, display_data['don_thuoc'][i][1])
-
-
 
         self.luu_y_entry.insert(0, display_data['luu_y'])
         self.hinh_thuc_dieu_tri_entry.insert(0, display_data['hinh_thuc_dieu_tri'])

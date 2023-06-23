@@ -17,6 +17,7 @@ import AppManager
 class PrescriptionBaseClass(tk.Frame):
     def __init__(self, parent=None, controller=None):
         tk.Frame.__init__(self, parent)
+        self.mouse_on_canvas = False
         self.entry_width = 140
         self.current_row = 0
         self.current_diagnose_count = 0
@@ -100,6 +101,8 @@ class PrescriptionBaseClass(tk.Frame):
         self.last_diagnose = ket_luan_entry
         ma_chan_doan_entry.focus()
 
+        self.updateCanvasHeight()
+
     def remove_row_diagnose(self, event=None):
         if self.current_diagnose_count <= 1:
             [x.delete(0, tk.END) for x in self.list_diagnose[-1]]
@@ -121,6 +124,8 @@ class PrescriptionBaseClass(tk.Frame):
 
         self.last_diagnose = self.list_diagnose[-1][2]
         self.list_diagnose[-1][2].bind("<Tab>", self.add_row_diagnose)
+
+        self.updateCanvasHeight()
 
     def on_keyreleasePatientName(self, event):
 
@@ -287,8 +292,32 @@ class PrescriptionBaseClass(tk.Frame):
 
         # Create a frame for prescription information
 
-        self.prescription_info_frame = tk.LabelFrame(self, text='Prescription Information')
-        self.prescription_info_frame.grid(row=0, column=1, padx=10, pady=10, rowspan=3)
+
+
+        frame = tk.LabelFrame(self, text="LabelFrame", padx=5, pady=5)
+        frame.grid(row=0, column=1, padx=10, pady=10, rowspan=3)
+
+        self.canvas = tk.Canvas(frame)
+        # canvas.grid(row=0, column=0, sticky="nsew")
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        scrollbar = tk.Scrollbar(frame, orient="vertical", command=self.canvas.yview)
+        # scrollbar.grid(row=0, column=1, sticky="ns")
+        scrollbar.pack(side="right", fill="y")
+
+        self.canvas.configure(yscrollcommand=scrollbar.set)
+        self.canvas.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+
+        self.prescription_info_frame = tk.Frame(self.canvas)
+        # self.bind("<Motion>", self.on_mouse_move_canvas)
+        self.canvas.bind_all("<MouseWheel>", self.on_mousewheel)
+        self.canvas.create_window((0, 0), window=self.prescription_info_frame, anchor="nw")
+
+        self.prescription_info_frame.bind('<Enter>', self.on_enter_pres_frame)
+        self.prescription_info_frame.bind('<Leave>', self.on_leave_pres_frame)
+
+        # self.prescription_info_frame = tk.LabelFrame(self, text='Prescription Information')
+        # self.prescription_info_frame.grid(row=0, column=1, padx=10, pady=10, rowspan=3)
 
         tk.Label(self.prescription_info_frame, text='Chẩn đoán').grid(row=0, column=0, padx=5, pady=5)
         # chan_doan_entry = tk.Entry(self.prescription_info_frame, width=50)
@@ -398,6 +427,11 @@ class PrescriptionBaseClass(tk.Frame):
         self.add_row_diagnose()
         self.add_row_medicine()
 
+        self.canvas.configure(width=self.prescription_info_frame.winfo_width())
+        self.canvas.configure(height=self.prescription_info_frame.winfo_height())
+
+        self.bind('<Configure>', self.on_resize)
+
     def add_row_medicine(self, event=None):
         row_thres = self.current_diagnose_count + 6
 
@@ -438,6 +472,8 @@ class PrescriptionBaseClass(tk.Frame):
         self.last_medicine = cach_dung_entry
         ma_thuoc_entry.focus()
 
+        self.updateCanvasHeight()
+
     def remove_row_medicine(self, event=None):
         if self.current_medicine_count <= 1:
             [x.delete(0, tk.END) for x in self.list_medicine[-1]]
@@ -458,6 +494,8 @@ class PrescriptionBaseClass(tk.Frame):
 
         self.last_medicine = self.list_medicine[-1][2]
         self.list_medicine[-1][-1].bind("<Tab>", self.add_row_medicine)
+
+        self.updateCanvasHeight()
 
     def on_keyreleaseMedicineName(self, event):
 
@@ -551,6 +589,36 @@ class PrescriptionBaseClass(tk.Frame):
         self.insurance_id.delete(0, tk.END)
         self.guardian_info.delete(0, tk.END)
         self.address.delete(0, tk.END)
+
+    def updateCanvasHeight(self):
+        bbox = self.canvas.bbox("all")
+        bbox = (bbox[0], bbox[1] , bbox[2], bbox[3] + 20)
+
+        self.canvas.configure(scrollregion=bbox)
+        pass
+        # self.canvas.configure(height=self.prescription_info_frame.winfo_height())
+
+    def on_mousewheel(self, event):
+        # self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        if self.mouse_on_canvas:
+            self.canvas.yview_scroll(-int(event.delta / 60), "units")
+
+    # def on_mouse_move_canvas(self, event):
+    #     items = self.canvas.find_overlapping(event.x, event.y, event.x, event.y)
+    #     if len(items) > 0:
+    #         self.mouse_on_canvas = True
+    #     else:
+    #         self.mouse_on_canvas = False
+        # print(self.mouse_on_canvas)
+
+    def on_enter_pres_frame(self, event):
+        self.mouse_on_canvas = True
+
+    def on_leave_pres_frame(self, event):
+        self.mouse_on_canvas = False
+
+    def on_resize(self, event):
+        self.canvas.configure(height=int(event.height * 0.75))
 
     # def on_visibility(self, event):
     #     self.resetAll()
