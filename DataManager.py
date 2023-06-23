@@ -1,5 +1,23 @@
 from tinydb import TinyDB, Query, where
 import os
+from datetime import datetime
+import time
+from tkinter import messagebox
+
+def decimal_to_base36(decimal):
+    alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
+    base36 = ''
+    sign = ''
+
+    if decimal < 0:
+        sign = '-'
+        decimal = -decimal
+
+    while decimal > 0:
+        decimal, remainder = divmod(decimal, 36)
+        base36 = alphabet[remainder] + base36
+
+    return sign + base36
 
 def getDiseaseList():
     return_value = {}
@@ -85,7 +103,14 @@ class DataManager:
                 return_value.append((key.capitalize(), node[1]))
         return return_value
 
+    def getPrescriptionID(self, ma_co_so, loai_don_thuoc):
+        current_time = int(time.time())
+        current_time_encode = decimal_to_base36(current_time)
+        return str(ma_co_so) + current_time_encode + str(loai_don_thuoc)
+
     def inserPrescription(self, data):
+        prescription_ID = self.getPrescriptionID("12345", "-c")
+
         patient_data = {'ho_ten_benh_nhan': data['patientName'],
                         'ma_dinh_danh_y_te': data['medical_id'],
                         'ma_dinh_danh_cong_dan': data['patient_id'],
@@ -104,7 +129,9 @@ class DataManager:
                              'loi_dan': data['loi_dan_entry'],
                              'ngay_tai_kham': data['ngay_tai_kham'],
                              'ngay_gio_ke_don': data['ngay_gio_ke_don'],
-                             'chu_ky_so': data['chu_ky_so']}
+                             'chu_ky_so': data['chu_ky_so'],
+                             'sdt_nguoi_kham': data['sdt_nguoi_kham'],
+                             'prescription_ID': prescription_ID}
 
         # check exist
         qpatient = Query()
@@ -121,28 +148,63 @@ class DataManager:
 
         self.don_thuoc_table.insert(prescription_data)
 
-        # data = {
-        #     'patientName': self.comboboxPatient.get(),
-        #     'medical_id': self.medical_id.get(),
-        #     'patient_id': self.patient_id.get(),
-        #     'date_of_birth': self.date_of_birth.get(),
-        #     'weight': self.weight.get(),
-        #     'sex_var': self.sex_var.get(),
-        #     'insurance_id': self.insurance_id.get(),
-        #     'guardian_info': self.guardian_info.get(),
-        #     'chandoan': [x.get() for x in self.list_diagnose],
-        #     'luu_y': self.luu_y_entry.get(),
-        #     'hinh_thuc_dieu_tri': self.hinh_thuc_dieu_tri_entry.get(),
-        #     'dot_dung_thuoc': self.dot_dung_thuoc_entry.get(),
-        #     'don_thuoc': [x.get() for x in self.list_medicine],
-        #     'loi_dan_entry': self.loi_dan_entry.get(),
-        #     'ngay_tai_kham': self.ngay_tai_kham_entry.get(),
-        #     'ngay_gio_ke_don': self.ngay_gio_ke_don_entry.get(),
-        #     'chu_ky_so': self.chu_ky_so_entry.get(),
-        # }
+    def updatePrescription(self, data):
+
+        patient_data = {'ho_ten_benh_nhan': data['patientName'],
+                        'ma_dinh_danh_y_te': data['medical_id'],
+                        'ma_dinh_danh_cong_dan': data['patient_id'],
+                        'ngay_sinh_benh_nhan': data['date_of_birth'],
+                        'can_nang': data['weight'],
+                        'gioi_tinh': data['sex_var'],
+                        'ma_so_the_bao_hiem_y_te': data['insurance_id'],
+                        'thong_tin_nguoi_giam_ho': data['guardian_info'],
+                        'dia_chi': data['address']}
+
+        prescription_data = {'chan_doan': [(x[0].get(), x[2].get()) for x in data['chandoan']],
+                             'luu_y': data['luu_y'],
+                             'hinh_thuc_dieu_tri': data['hinh_thuc_dieu_tri'],
+                             'dot_dung_thuoc': data['dot_dung_thuoc'],
+                             'don_thuoc': [(x[0].get(), x[4].get()) for x in data['don_thuoc']],
+                             'loi_dan': data['loi_dan_entry'],
+                             'ngay_tai_kham': data['ngay_tai_kham'],
+                             'ngay_gio_ke_don': data['ngay_gio_ke_don'],
+                             'chu_ky_so': data['chu_ky_so'],
+                             'sdt_nguoi_kham': data['sdt_nguoi_kham'],
+                             'prescription_ID': data['prescription_ID'],
+                             'patient': data['patient']}
+
+        # check exist
+        qpatient = Query()
+        condition = (qpatient.ho_ten_benh_nhan == data['patientName']) & \
+                    (qpatient.ngay_sinh_benh_nhan == data['date_of_birth'])
+        results = self.patient_table.search(condition)
+
+        if len(results) > 0: # TODO Check condition if exist multiple patient
+            if prescription_data['patient'] != results[0]['ID']:
+                answer = messagebox.askquestion("Xác nhận dùm cái", "Bệnh nhân không khớp với đơn thuốc cũ, "
+                                                           "bạn có muốn cập nhật bệnh nhân vào đơn thuốc?")
+                if answer != "yes":
+                    return
+
+
+            # self.patient_table.update(patient_data, condition)
+            # prescription_data['patient'] = results[0]['ID']
+        else:
+            messagebox.showerror("Lỗi", "Thông tin bệnh nhân không khớp với ai trong dữ liệu cả! Qua bên cửa sổ thêm "
+                                          "bệnh nhân để thêm đơn thuốc/ bệnh nhân")
+            return
+
+        # self.don_thuoc_table.insert(prescription_data)
+
+
+    def checkSuitablePrescription(self, pres, keyword):
+        return keyword in pres['ho_ten_benh_nhan'].lower()
 
     def getAllPrescription(self):
-        return self.don_thuoc_table.all() #TODO filter and sort by time
+        temp = sorted(self.don_thuoc_table.all(),
+                                  key=lambda d: datetime.strptime(d['ngay_gio_ke_don'], '%d/%m/%Y'), reverse=True)
+
+        return temp
 
     def setPatientInfoToPrescription(self, list_pres):
         # print(list_pres)
@@ -245,17 +307,35 @@ thuoc_data = [{'ma_thuoc': '123a',
              ]
 
 
-
-# [data_manager.insertMedicine(x) for x in thuoc_data]
-
-# results = data_manager.searchMedicine("z")
-# Medicine = Query()
-# results = data_manager.getMedicine('C new Medicine')
 #
-# for res in results:
-#     print(res)
+checkdata = data_manager.getAllPrescription()
+#
+# checkdata = sorted(checkdata, key=lambda d: datetime.strptime(d['ngay_gio_ke_don'], '%d/%m/%Y'), reverse=True)
+#
+# for info in checkdata:
+#
+#     # checktime = datetime.strptime(info['ngay_gio_ke_don'], '%d/%m/%Y')
+#     # current_time_encode = decimal_to_base36(int(datetime.timestamp(checktime)))
+#     #
+#     # qpatient = Query()
+#     # condition = qpatient.patient == info['patient']
+#     #
+#     # info['prescription_ID'] = "12345" + current_time_encode + "-c"
+#     #
+#     # data_manager.don_thuoc_table.update(info, condition)
+#
+#     # print('----')
+#     print(info)
+#     # print(current_time_encode)
+#     # print("12345" + current_time_encode + "-c")
+#
+#     # print(info['ngay_gio_ke_don'])
+#
+#
+# date_string = '3/2/2022'
+# checktime = datetime.strptime(date_string, '%d/%m/%Y')
+# print(int(datetime.timestamp(checktime)))
+# #
 
-# print(data_manager.searchDiseaseFromName("flu"))
 
-# print(data_manager.getDiseaseFromID("A03"))
-# data_manager.don_thuoc_table.truncate()
+

@@ -6,6 +6,7 @@ except ImportError:
     import Tkinter as tk     # python 2
     import tkFont as tkfont  # python 2
 
+from tkinter import messagebox
 from tkinter import ttk
 from tkcalendar import DateEntry
 from PIL import ImageTk, Image
@@ -558,8 +559,6 @@ class PrescriptionBaseClass(tk.Frame):
             'sdt_nguoi_kham': self.so_dien_thoai_nguoi_kham_benh_entry.get()
         }
 
-        print(data)
-
         getDataManager().inserPrescription(data)
 
     def resetDianoseAndMedicineList(self):
@@ -620,8 +619,9 @@ class PrescriptionBaseClass(tk.Frame):
     def on_resize(self, event):
         self.canvas.configure(height=int(event.height * 0.75))
 
-    # def on_visibility(self, event):
-    #     self.resetAll()
-    #     print("showframe")
-
+    def checkValidPrescription(self):
+        if len(self.comboboxPatient.get()) == 0:
+            messagebox.showerror("Error", "This is an error message")
+            return False
+        return True
 
