@@ -271,8 +271,8 @@ class PrescriptionBaseClass(tk.Frame):
         self.button_frame = tk.LabelFrame(self)
         self.button_frame.grid(row=1, column=0, padx=10, pady=10)
 
-        savesync_img = loadImage("resources/savesync.png", 96)
-        savesync_button = tk.Button(self.button_frame, image=savesync_img)
+        savesync_img = loadImage("resources/sync.png", 96)
+        savesync_button = tk.Button(self.button_frame, image=savesync_img, command=self.syncPrescription)
         savesync_button.image = savesync_img
         savesync_button.grid(row=0, column=0)
 
@@ -284,12 +284,17 @@ class PrescriptionBaseClass(tk.Frame):
         debug_img = loadImage("resources/test.png", 96)
         debug_button = tk.Button(self.button_frame, image=debug_img, command=self.DEBUGSetDummyValue)
         debug_button.image = debug_img
-        debug_button.grid(row=0, column=3)
+        debug_button.grid(row=0, column=2)
 
         back_img = loadImage("resources/backbutton.png", 96)
         back_button = tk.Button(self.button_frame, image=back_img, command=self.back)
         back_button.image = back_img
-        back_button.grid(row=0, column=4)
+        back_button.grid(row=1, column=0)
+
+        export_img = loadImage("resources/export.png", 96)
+        export_button = tk.Button(self.button_frame, image=export_img, command=self.back)
+        export_button.image = export_img
+        export_button.grid(row=1, column=1)
 
         # Create a frame for prescription information
 
@@ -535,8 +540,7 @@ class PrescriptionBaseClass(tk.Frame):
         to_update_row[3].insert(0, value['don_vi_tinh'])
         to_update_row[5].insert(0, value['cach_dung'])
 
-    def savePrescription(self):
-
+    def getPrescriptionInfo(self):
         data = {
             'patientName': self.comboboxPatient.get(),
             'medical_id': self.medical_id.get(),
@@ -558,8 +562,22 @@ class PrescriptionBaseClass(tk.Frame):
             'chu_ky_so': self.chu_ky_so_entry.get(),
             'sdt_nguoi_kham': self.so_dien_thoai_nguoi_kham_benh_entry.get()
         }
+        return data
 
+
+    def savePrescription(self):
+
+        data = self.getPrescriptionInfo()
         getDataManager().inserPrescription(data)
+
+    def syncPrescription(self):
+        data = self.getPrescriptionInfo()
+        # data['']
+        # #TODO SYNC!
+
+        pass
+
+
 
     def resetDianoseAndMedicineList(self):
         for i in range(len(self.list_medicine)):
@@ -624,4 +642,7 @@ class PrescriptionBaseClass(tk.Frame):
             messagebox.showerror("Error", "This is an error message")
             return False
         return True
+
+    def exportReport(self):
+        pass
 

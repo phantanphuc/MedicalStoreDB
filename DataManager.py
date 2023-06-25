@@ -186,15 +186,21 @@ class DataManager:
                 if answer != "yes":
                     return
 
-
-            # self.patient_table.update(patient_data, condition)
-            # prescription_data['patient'] = results[0]['ID']
+            self.patient_table.update(patient_data, condition)
+            prescription_data['patient'] = results[0]['ID']
         else:
             messagebox.showerror("Lỗi", "Thông tin bệnh nhân không khớp với ai trong dữ liệu cả! Qua bên cửa sổ thêm "
                                           "bệnh nhân để thêm đơn thuốc/ bệnh nhân")
             return
 
-        # self.don_thuoc_table.insert(prescription_data)
+        qprescription = Query()
+        condition2 = (qprescription.prescription_ID == data['prescription_ID'])
+        self.don_thuoc_table.update(prescription_data, condition2)
+
+    def syncPrescription(self, data):
+        #TODO Sync
+
+        self.don_thuoc_table.update({'synced': True}, Query().prescription_ID == data['prescription_ID'])
 
 
     def checkSuitablePrescription(self, pres, keyword):
@@ -317,8 +323,8 @@ checkdata = data_manager.getAllPrescription()
 #     # checktime = datetime.strptime(info['ngay_gio_ke_don'], '%d/%m/%Y')
 #     # current_time_encode = decimal_to_base36(int(datetime.timestamp(checktime)))
 #     #
-#     # qpatient = Query()
-#     # condition = qpatient.patient == info['patient']
+#     qpatient = Query()
+#     condition = qpatient.prescription_ID == info['prescription_ID']
 #     #
 #     # info['prescription_ID'] = "12345" + current_time_encode + "-c"
 #     #
@@ -328,9 +334,9 @@ checkdata = data_manager.getAllPrescription()
 #     print(info)
 #     # print(current_time_encode)
 #     # print("12345" + current_time_encode + "-c")
-#
-#     # print(info['ngay_gio_ke_don'])
-#
+
+    # print(info['ngay_gio_ke_don'])
+
 #
 # date_string = '3/2/2022'
 # checktime = datetime.strptime(date_string, '%d/%m/%Y')

@@ -22,16 +22,33 @@ class ViewPrescriptionForm(PrescriptionBaseClass.PrescriptionBaseClass):
         self.addViewPrescriptionWidget()
         self.current_prescription_ID = ''
         self.current_patient_ID = ''
+        self.current_index = -1
+        self.last_color = None
 
     def on_prescription_select(self, event):
         # get selected item index
+        if len(event.widget.curselection()) == 0:
+            return
         index = event.widget.curselection()[0]
+
+        if index == self.current_index:
+            return
+
         # get selected item
         # selected_item = event.widget.get(index)
         selected_data = self.prescription_list[index]
         self.setPrescriptionData(selected_data)
         self.current_prescription_ID = selected_data['prescription_ID']
         self.current_patient_ID = selected_data['patient']
+
+        if self.current_index != -1:
+            self.prescription_listbox.itemconfig(self.current_index, bg=self.last_color)
+
+        self.last_color = self.prescription_listbox.itemconfig(index, 'bg')[4]
+        self.prescription_listbox.itemconfig(index, bg='yellow')
+        self.current_index = index
+
+
 
     def updatePrescriptionListbox(self, keyword=''):
         self.prescription_listbox.delete(0,tk.END)
@@ -49,15 +66,21 @@ class ViewPrescriptionForm(PrescriptionBaseClass.PrescriptionBaseClass):
         self.prescription_display_list = [x['ho_ten_benh_nhan'] for x in self.prescription_list]
 
         # for i in range(20):
-        for item in self.prescription_display_list:
+        for item, pres_item in zip(self.prescription_display_list, self.prescription_list):
             self.prescription_listbox.insert(tk.END, item)
+            if 'synced' in pres_item and pres_item['synced']:
+            # if 'a' in item:
+                self.prescription_listbox.itemconfig(tk.END, bg=from_rgb((196, 255, 196)))
+            else:
+                self.prescription_listbox.itemconfig(tk.END, bg=from_rgb((255, 196, 196)))
+
+        # self.prescription_listbox.itemconfig(1, bg='yellow')
 
         self.prescription_listbox.bind('<<ListboxSelect>>', self.on_prescription_select)
 
     def searchPrescription(self):
+        self.resetColor()
         keyword = self.pres_search_entry.get()
-        print("aa")
-        print(keyword)
         self.updatePrescriptionListbox(keyword)
 
 
@@ -76,7 +99,9 @@ class ViewPrescriptionForm(PrescriptionBaseClass.PrescriptionBaseClass):
         self.search_pres_scrollbar = tk.Scrollbar(self.list_prescription_frame)
         self.search_pres_scrollbar.grid(row=1, column=3, sticky=tk.N+tk.S)
 
-        self.prescription_listbox = tk.Listbox(self.list_prescription_frame, width=60, yscrollcommand=self.search_pres_scrollbar.set)
+        self.prescription_listbox = tk.Listbox(self.list_prescription_frame, width=45,
+                                               yscrollcommand=self.search_pres_scrollbar.set,
+                                               font=('Helvetica', 12, 'bold'))
         self.prescription_listbox.grid(row=1, column=0, columnspan=3)
 
         self.updatePrescriptionListbox()
@@ -133,29 +158,34 @@ class ViewPrescriptionForm(PrescriptionBaseClass.PrescriptionBaseClass):
 
         print('updating')
 
-        data = {
-            'patientName': self.comboboxPatient.get(),
-            'medical_id': self.medical_id.get(),
-            'patient_id': self.patient_id.get(),
-            'date_of_birth': self.date_of_birth.get(),
-            'weight': self.weight.get(),
-            'sex_var': self.sex_var.get(),
-            'insurance_id': self.insurance_id.get(),
-            'guardian_info': self.guardian_info.get(),
-            'address': self.address.get(),
-            'chandoan': self.list_diagnose,
-            'luu_y': self.luu_y_entry.get(),
-            'hinh_thuc_dieu_tri': self.hinh_thuc_dieu_tri_entry.get(),
-            'dot_dung_thuoc': self.dot_dung_thuoc_entry.get(),
-            'don_thuoc': self.list_medicine,
-            'loi_dan_entry': self.loi_dan_entry.get(),
-            'ngay_tai_kham': self.ngay_tai_kham_entry.get(),
-            'ngay_gio_ke_don': self.ngay_gio_ke_don_entry.get(),
-            'chu_ky_so': self.chu_ky_so_entry.get(),
-            'sdt_nguoi_kham': self.so_dien_thoai_nguoi_kham_benh_entry.get(),
-            'prescription_ID': self.current_prescription_ID,
-            'patient': self.current_patient_ID
-        }
+        data = self.getPrescriptionInfo()
+        data['prescription_ID'] = self.current_prescription_ID
+        data['patient'] = self.current_patient_ID
 
         getDataManager().updatePrescription(data)
 
+        self.resetColor()
+
+
+    def syncPrescription(self):
+        if self.current_prescription_ID == '':
+            return
+        data = self.getPrescriptionInfo()
+        data['prescription_ID'] = self.current_prescription_ID
+        data['patient'] = self.current_patient_ID
+        #TODO SYNC!
+        getDataManager().updatePrescription(data)
+        getDataManager().syncPrescription(data)
+
+        self.resetColor()
+
+        self.updatePrescriptionListbox()
+        self.searchPrescription()
+
+
+
+    def resetColor(self):
+        if self.current_index == -1:
+            return
+        self.prescription_listbox.itemconfig(self.current_index, bg=self.last_color)
+        self.current_index = -1
