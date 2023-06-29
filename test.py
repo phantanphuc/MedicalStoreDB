@@ -1,41 +1,20 @@
-import tkinter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
-class simpleapp_tk(tkinter.Tk):
-    def __init__(self,parent):
-        tkinter.Tk.__init__(self,parent)
-        self.parent = parent
-        self.initialize()
+pdfmetrics.registerFont(TTFont('TimesNewRoman', 'times.ttf'))
+pdfmetrics.registerFont(TTFont('TimesNewRoman-Bold', 'timesbd.ttf'))
 
-    def initialize(self):
-        self.grid()
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph
 
-        label = tkinter.Label(self,anchor="center",bg="green")
-        label.grid(column=0,row=0,sticky='NSEW')
-
-        label2 = tkinter.Label(self,anchor="center",bg="black")
-        label2.grid(column=1,row=0,sticky='NSEW')
-
-        label3 = tkinter.Label(self,anchor="center",bg="red")
-        label3.grid(column=2,row=0,sticky='NSEW')
-
-        label4 = tkinter.Label(self,anchor="center",bg="purple")
-        label4.grid(column=0,row=1,sticky='NSEW')
-
-        label5 = tkinter.Label(self,anchor="center",bg="blue")
-        label5.grid(column=1,row=1,sticky='NSEW')
-
-        label6 = tkinter.Label(self,anchor="center",bg="yellow")
-        label6.grid(column=2,row=1,sticky='NSEW')
-
-
-        self.grid_columnconfigure(0,weight=1)
-        self.grid_columnconfigure(1,weight=1)
-        self.grid_columnconfigure(2,weight=1)
-        self.grid_rowconfigure(0,weight=1)
-        self.grid_rowconfigure(1,weight=1)
-
-
-if __name__ == "__main__":
-    app = simpleapp_tk(None)
-    app.title("Test App")
-    app.mainloop()
+styles = getSampleStyleSheet()
+style = styles["Normal"]
+style.fontName = 'TimesNewRoman'
+style.fontSize = 10
+style.alignment = TA_LEFT
+style.leading = 12
+text = 'This is a <b>bold</b> word.'
+para = Paragraph(text, style)
+paraStyle = para.style
+paraStyle.wordWrap = 'CJK'
+paraStyle.add('b', paraStyle.fontName, 'TimesNewRoman-Bold')

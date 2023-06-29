@@ -1,80 +1,179 @@
-import tkinter as tk
+from reportlab.lib.colors import Color
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.lib.pagesizes import A5
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.pdfbase.pdfmetrics import registerFontFamily
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib import colors
+from reportlab.platypus import  Table, TableStyle
+from reportlab.platypus import Paragraph
+import textwrap
+from reportlab.pdfbase.pdfmetrics import stringWidth
 
-def add_row(event=None):
-    # Create new row
-    row = len(medicine_list) + 1
+def writeWithWrap(towrite, pcanvas, start_height, row_height, start_width, num_of_char):
+    wrap_text = textwrap.wrap(towrite, width=num_of_char)
+    index_row = 0
+    for mini_row in wrap_text:
+        pcanvas.drawString(start_width, start_height - index_row * row_height * cm, mini_row)
 
-    # Add name field
-    name_label = tk.Label(form, text=f"Medicine {row} Name:")
-    name_label.grid(row=row, column=0)
-    name_entry = tk.Entry(form)
-    name_entry.grid(row=row, column=1)
+        index_row = index_row + 1
 
-    # Add price field
-    price_label = tk.Label(form, text=f"Medicine {row} Price:")
-    price_label.grid(row=row, column=2)
-    price_entry = tk.Entry(form)
-    price_entry.grid(row=row, column=3)
+    return start_height - index_row * row_height * cm
 
-    # Add type field
-    type_label = tk.Label(form, text=f"Medicine {row} Type:")
-    type_label.grid(row=row, column=4)
-    type_entry = tk.Entry(form)
-    type_entry.grid(row=row, column=5)
 
-    # Add new medicine to list
-    medicine_list.append((name_label, name_entry, price_label, price_entry, type_label, type_entry))
+pdfmetrics.registerFont(TTFont("TimesNewRoman", "times.ttf"))
+pdfmetrics.registerFont(TTFont('TimesNewRoman-Bold', 'timesbd.ttf'))
+registerFontFamily('TimesNewRoman', normal='TimesNewRoman', bold='TimesNewRoman-Bold')
 
-    # Set focus to first field of new row
-    name_entry.focus()
 
-def remove_row():
-    # Remove last row
-    if len(medicine_list) > 1:
-        name_label, name_entry, price_label, price_entry, type_label, type_entry = medicine_list.pop()
-        name_label.destroy()
-        name_entry.destroy()
-        price_label.destroy()
-        price_entry.destroy()
-        type_label.destroy()
-        type_entry.destroy()
+def drawSpecial(text, canvas, style, wraponloc, drawonloc):
+    para = Paragraph(text, style)
+    para.wrapOn(canvas, wraponloc[0], wraponloc[1])
+    para.drawOn(canvas, drawonloc[0], drawonloc[1])
 
-        # Set focus to last field of previous row
-        last_row = len(medicine_list)
-        if last_row > 0:
-            medicine_list[last_row - 1][4].focus()
 
-# Create main window
-root = tk.Tk()
-root.title("Medicine List")
+def drawSpecialV2(text, canvas, fontsize, wraponloc, drawonloc, align=TA_LEFT, textcolor='black', try_align_middle=False):
+    styles = getSampleStyleSheet()
+    styleN = styles["BodyText"]
+    styleN.fontName = 'TimesNewRoman'
+    styleN.fontSize = fontsize
+    styleN.alignment = align
+    styleN.textColor = textcolor
 
-# Create form
-form = tk.Frame(root)
-form.pack()
+    para = Paragraph(text, styleN)
+    para.wrapOn(canvas, wraponloc[0], wraponloc[1])
 
-# Create initial row of fields
-name_label = tk.Label(form, text="Medicine 1 Name:")
-name_label.grid(row=1, column=0)
-name_entry = tk.Entry(form)
-name_entry.grid(row=1, column=1)
+    line_count = len(para.blPara.lines)
+    line_height = para.height / line_count
 
-price_label = tk.Label(form, text="Medicine 1 Price:")
-price_label.grid(row=1, column=2)
-price_entry = tk.Entry(form)
-price_entry.grid(row=1, column=3)
+    x_align = 0
+    if try_align_middle:
+        textwidth = stringWidth(text, "TimesNewRoman", fontsize)
+        x_align = int(textwidth / 2)
 
-type_label = tk.Label(form, text="Medicine 1 Type:")
-type_label.grid(row=1, column=4)
-type_entry = tk.Entry(form)
-type_entry.grid(row=1, column=5)
+    para.drawOn(canvas, drawonloc[0] - x_align, drawonloc[1] - int(line_height * (line_count - 1)))
 
-medicine_list = [(name_label, name_entry, price_label, price_entry, type_label, type_entry)]
 
-# Bind tab key to add_row function when user is focused on the last field of the last row
-type_entry.bind("<Tab>", add_row)
 
-# Create button to remove last row
-remove_button = tk.Button(root, text="Remove Medicine", command=remove_row)
-remove_button.pack()
+def generate_prescription(hospital_name, hospital_phone, hospital_address, patient_name, patient_dob,
+                          patient_weight, patient_gender, patient_id, patient_address, doctor_comment,
+                          day_time, doctor_name, doctor_phone, parent_info, patient_cmnd):
+    c = canvas.Canvas("prescription.pdf", pagesize=A5)
+    c.setFont("TimesNewRoman", 10)
 
-root.mainloop()
+    page_width, page_height = A5
+
+    styles = getSampleStyleSheet()
+    styleN = styles["BodyText"]
+    styleN.fontName = 'TimesNewRoman'
+    styleN.fontSize = 9
+    styleN.alignment = TA_LEFT
+
+    start_heigh = 20
+    row_heigh = 0.4
+
+    drawSpecialV2(f'<b>{hospital_name}</b>', c, 9, (page_width - 2 * cm, page_height), (1 * cm, start_heigh * cm))
+    drawSpecialV2(f"<b><u>Điện Thoại: {hospital_phone}</u></b>", c, 9, (page_width - 2 * cm, page_height), (1 * cm, (start_heigh - row_heigh) * cm))
+    drawSpecialV2(f"Địa Chỉ: <b>{hospital_address}</b>", c, 9, (page_width - 2 * cm, page_height), (1 * cm, (start_heigh - row_heigh * 2) * cm))
+
+    drawSpecialV2("<b>ĐƠN THUỐC</b>", c, 15, (page_width - 2 * cm, page_height), (cm, (start_heigh - row_heigh * 4) * cm), align=TA_CENTER, textcolor='red')
+
+    start_heigh = (start_heigh - row_heigh * 5.5)
+    row_heigh = 0.35
+
+    drawSpecialV2(f"Họ tên: <b>{patient_name}</b>", c, 9, (page_width - 2 * cm, page_height), (1 * cm, start_heigh * cm))
+    drawSpecialV2(f"Ngày sinh: <b>{patient_dob}</b>", c, 9, (page_width - 2 * cm, page_height), (1 * cm, (start_heigh - row_heigh) * cm))
+    drawSpecialV2(f"Cân nặng: <b>{patient_weight}</b>", c, 9, (page_width - 2 * cm, page_height), (1 * cm, (start_heigh - row_heigh) * cm), align=TA_CENTER)
+    drawSpecialV2(f"Giới tính: <b>{patient_gender}</b>", c, 9, (page_width - 2 * cm, page_height), (page_width - 4 * cm, (start_heigh - row_heigh) * cm))
+    drawSpecialV2(f"Mã số thẻ bảo hiểm (nếu có): <b>{patient_id}</b>", c, 9, (page_width - 2 * cm, page_height), (1 * cm, (start_heigh - row_heigh * 2) * cm))
+    drawSpecialV2(f"Địa chỉ liên hệ: <b>{patient_address}</b>", c, 9, (page_width - 2 * cm, page_height), (1 * cm, (start_heigh - row_heigh * 3) * cm))
+
+
+    c.drawString(1 * cm, (start_heigh - row_heigh * 4) * cm, f"Chẩn đoán:")
+
+    descrpcion = Paragraph('Take medicine ake medicine ake medicine ake medicine Take medicine ake medicine ake medicine ake medicine Take medicine ake medicine ake medicine ake medicine', styleN)
+
+    data = [
+        ["Mã", "Chẩn đoán", "Kết luận"],
+        ["001", "Flu", Paragraph("Take medicine akee", styleN)],
+        ["002", "Cold", descrpcion]
+    ]
+    table_diagnose = Table(data, colWidths=[1*cm, int((page_width - 3 * cm) / 2), int((page_width - 3 * cm) / 2)])
+    table_diagnose.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 1), (-1, -1), 'TimesNewRoman'),
+        ('FONTNAME', (0, 0), (-1, 0), 'TimesNewRoman-Bold'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('LEFTPADDING', (0, 0), (-1, -1), 2),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+    ]))
+    table_diagnose.wrapOn(c, *A5)
+    width_diagnose, height_diagnose = table_diagnose.wrap(*A5)
+    table_diagnose.drawOn(c, 1 * cm, (start_heigh - row_heigh * 4.5) * cm - height_diagnose)
+
+    start_heigh = (start_heigh - row_heigh * 5.5) * cm - height_diagnose
+
+    c.drawString(1 * cm, start_heigh, f"Thuốc điều trị:")
+
+
+    data_medicine = [
+        ["STT", "Hoạt chất", "Tên thuốc", "Đơn vị tính", "Số lượng", "Cách dùng"],
+        ["001", "Flu", "Take medicine", 'gói', '12', '2 Ngày'],
+        ["002", "Cold", "Rest", 'gói', '12', '2 Ngày']
+    ]
+    table_medicine = Table(data_medicine, colWidths=[0.75*cm, int((page_width - 7.25 * cm) / 2), int((page_width - 7.25 * cm) / 2), 1.5*cm, 1.5*cm, 1.5*cm])
+    table_medicine.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 1), (-1, -1), 'TimesNewRoman'),
+        ('FONTNAME', (0, 0), (-1, 0), 'TimesNewRoman-Bold'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('LEFTPADDING', (0, 0), (-1, -1), 2),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+    ]))
+
+    table_medicine.wrapOn(c, *A5)
+    width_medicine, height_medicine = table_medicine.wrap(*A5)
+    table_medicine.drawOn(c, 1 * cm, start_heigh - row_heigh * cm - height_medicine + 0.2 * cm)
+
+    start_heigh = start_heigh - row_heigh * 2 * cm - height_medicine + 0.2 * cm
+
+    start_heigh = writeWithWrap(f"Lời dặn của bác sĩ: {doctor_comment}", c, start_heigh, row_heigh, 1 * cm, 80) + row_heigh * cm
+
+    # c.drawString(1 * cm, start_heigh, f"Lời dặn của bác sĩ: {doctor_comment}")
+
+    c.drawCentredString(page_width - 4 * cm, start_heigh - row_heigh * 2 * cm, f"{day_time}")
+    c.drawCentredString(page_width - 4 * cm, start_heigh - row_heigh * 3 * cm, "Bác sỹ/Y sỹ khám bệnh")
+    c.drawCentredString(page_width - 4 * cm, start_heigh - row_heigh * 4 * cm, "(Ký, ghi rõ họ tên)")
+
+    drawSpecialV2(f"<b>Bác sĩ: {doctor_name}</b>", c, 9, (page_width - 2 * cm, page_height), (page_width - 3.5 * cm, start_heigh - row_heigh * 10 * cm), try_align_middle=True)
+
+    c.drawString(1 * cm, start_heigh - row_heigh * 11 * cm, f"Khám lại xin mang theo đơn này")
+
+    drawSpecialV2(f"Số điện thoại liên hệ: <u>{doctor_phone}</u>", c, 9, (page_width - 2 * cm, page_height), (1 * cm, start_heigh - row_heigh * 12.3 * cm))
+
+    start_heigh = writeWithWrap(f"Tên bố hoặc mẹ của trẻ hoặc người đưa trẻ đến khám bệnh, chữa bệnh: {parent_info}", c,
+                                start_heigh - row_heigh * 13 * cm, row_heigh, 1 * cm, 80) + row_heigh * cm
+
+    c.drawString(1 * cm, start_heigh - row_heigh * 1 * cm, f"Căn cước công dân/ chứng minh nhân dân người nhận thuốc: {patient_cmnd}")
+
+    c.save()
+
+
+
+generate_prescription("Bệnh Viện II  Lâm Đồng", "0633123456", "Số 263 Trần Quốc Toản, Phường B'Lao, Thành phố Bảo Lộc, Lâm Đồng",
+                      "Patient Name", "12/1/1992", "80kg", "Nam", "213124123213",
+                      "Patient Address", "Doctor's Comment Doctor's Comment Doctor's Comment Doctor's Comment Doctor's Comment Doctor's Comment Doctor's Comment", "08:32 21/10/2022",
+                      "Trần Trương Nguyễn Thanh Thanh", "092432321", "Mother, AA Doctor's Comment Doctor's Comment Doctor's Comment Doctor's", "")
