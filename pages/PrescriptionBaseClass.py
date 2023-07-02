@@ -12,7 +12,7 @@ from tkcalendar import DateEntry
 from PIL import ImageTk, Image
 
 from DataManager import getDataManager
-from common import *
+from pdfGenerator import *
 import AppManager
 
 class PrescriptionBaseClass(tk.Frame):
@@ -35,6 +35,9 @@ class PrescriptionBaseClass(tk.Frame):
         self.list_recommend_medicine = []
 
         self.create_widgets()
+
+        self.current_prescription_ID = None
+        self.current_patient_ID = None
 
     def dianoseIDClickOut(self, event):
         input_id = event.widget.get()
@@ -292,7 +295,7 @@ class PrescriptionBaseClass(tk.Frame):
         back_button.grid(row=1, column=0)
 
         export_img = loadImage("resources/export.png", 96)
-        export_button = tk.Button(self.button_frame, image=export_img, command=self.back)
+        export_button = tk.Button(self.button_frame, image=export_img, command=self.exportReport)
         export_button.image = export_img
         export_button.grid(row=1, column=1)
 
@@ -566,16 +569,23 @@ class PrescriptionBaseClass(tk.Frame):
 
 
     def savePrescription(self):
-
         data = self.getPrescriptionInfo()
-        getDataManager().inserPrescription(data)
+
+        if self.current_prescription_ID is None and self.current_patient_ID is None:
+            self.current_prescription_ID, self.current_patient_ID = getDataManager().inserPrescription(data)
+        else:
+            data['prescription_ID'] = self.current_prescription_ID
+            data['patient'] = self.current_patient_ID
+            getDataManager().updatePrescription(data)
+
 
     def syncPrescription(self):
+        self.savePrescription()
         data = self.getPrescriptionInfo()
-        # data['']
+        data['prescription_ID'] = self.current_prescription_ID
+        data['patient'] = self.current_patient_ID
         # #TODO SYNC!
-
-        pass
+        getDataManager().syncPrescription(data)
 
 
 
@@ -587,6 +597,10 @@ class PrescriptionBaseClass(tk.Frame):
             self.remove_row_diagnose()
 
     def resetAll(self):
+
+        self.current_prescription_ID = None
+        self.current_patient_ID = None
+
         self.resetDianoseAndMedicineList()
 
         self.luu_y_entry.delete(0, tk.END)
@@ -644,5 +658,10 @@ class PrescriptionBaseClass(tk.Frame):
         return True
 
     def exportReport(self):
-        pass
+        data = self.getPrescriptionInfo()
+        data['prescription_ID'] = self.current_prescription_ID
+        data['patient'] = self.current_patient_ID
+
+        savePrescriptionAsPdf(data)
+
 

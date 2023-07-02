@@ -156,8 +156,6 @@ class ViewPrescriptionForm(PrescriptionBaseClass.PrescriptionBaseClass):
         if not self.checkValidPrescription():
             return
 
-        print('updating')
-
         data = self.getPrescriptionInfo()
         data['prescription_ID'] = self.current_prescription_ID
         data['patient'] = self.current_patient_ID

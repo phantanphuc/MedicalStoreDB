@@ -110,7 +110,7 @@ class DataManager:
 
     def inserPrescription(self, data):
         prescription_ID = self.getPrescriptionID("12345", "-c")
-
+        print("insert")
         patient_data = {'ho_ten_benh_nhan': data['patientName'],
                         'ma_dinh_danh_y_te': data['medical_id'],
                         'ma_dinh_danh_cong_dan': data['patient_id'],
@@ -148,8 +148,10 @@ class DataManager:
 
         self.don_thuoc_table.insert(prescription_data)
 
-    def updatePrescription(self, data):
+        return prescription_ID, prescription_data['patient']
 
+    def updatePrescription(self, data):
+        print("update")
         patient_data = {'ho_ten_benh_nhan': data['patientName'],
                         'ma_dinh_danh_y_te': data['medical_id'],
                         'ma_dinh_danh_cong_dan': data['patient_id'],
@@ -199,7 +201,7 @@ class DataManager:
 
     def syncPrescription(self, data):
         #TODO Sync
-
+        print("sync")
         self.don_thuoc_table.update({'synced': True}, Query().prescription_ID == data['prescription_ID'])
 
 
