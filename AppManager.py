@@ -2,13 +2,14 @@ import pages.login as login
 import pages.mainmenu as mainmenu
 import pages.AddPrescription as AddPrescription
 import pages.viewPrescription as ViewPrescription
+import pages.ReportMenu as ReportMenu
 
 
 class AppManager:
     def __init__(self, basecontainer):
         self.frames = {}
         for F in (login.LoginPage, mainmenu.MainmenuPage, AddPrescription.AddPrescriptionForm,
-                  ViewPrescription.ViewPrescriptionForm, ):
+                  ViewPrescription.ViewPrescriptionForm, ReportMenu.ReportMenu):
             page_name = F.__name__
             frame = F(parent=basecontainer, controller=self)
             self.frames[page_name] = frame

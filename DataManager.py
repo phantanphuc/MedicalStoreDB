@@ -1,8 +1,11 @@
 from tinydb import TinyDB, Query, where
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 from tkinter import messagebox
+from tkinter.filedialog import asksaveasfilename
+import pandas as pd
+
 
 def decimal_to_base36(decimal):
     alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
@@ -223,6 +226,34 @@ class DataManager:
 
         return return_value
 
+    def createReport(self, fromdate, todate):
+        fromdate = datetime.strptime(fromdate, '%d/%m/%Y')
+        todate = datetime.strptime(todate, '%d/%m/%Y') + timedelta(days=1)
+
+        checkdata = self.getAllPrescription()
+
+        list_pres_return = []
+        for info in checkdata[:]:
+            checktime = datetime.strptime(info['ngay_gio_ke_don'], '%d/%m/%Y')
+
+            if (fromdate < checktime) and (checktime < todate):
+                info['chan_doan'] = str(info['chan_doan'])
+                info['don_thuoc'] = str(info['don_thuoc'])
+                list_pres_return.append(info)
+
+        list_dump_excel = self.setPatientInfoToPrescription(list_pres_return)
+        # print(list_dump_excel[0])
+
+        list_dump_excel = [pd.DataFrame(x, index=[0]) for x in list_dump_excel]
+        df = pd.concat(list_dump_excel, ignore_index=True)
+
+        f = asksaveasfilename(initialfile='report.xlsx',
+                          defaultextension=".xlsx", filetypes=[("All Files", "*.*"), ("Excel file", "*.xlsx")])
+
+        if f != '':
+            df.to_excel(f, sheet_name='data')
+
+
 data_manager = DataManager()
 
 def getDataManager():
@@ -315,16 +346,19 @@ thuoc_data = [{'ma_thuoc': '123a',
              ]
 
 
+# data_manager.getDataForReport('25/6/2023', '4/7/2023')
 #
-checkdata = data_manager.getAllPrescription()
+# checkdata = data_manager.getAllPrescription()
+# #
+# # checkdata = sorted(checkdata, key=lambda d: datetime.strptime(d['ngay_gio_ke_don'], '%d/%m/%Y'), reverse=True)
+# #
+# for info in checkdata[:5]:
 #
-# checkdata = sorted(checkdata, key=lambda d: datetime.strptime(d['ngay_gio_ke_don'], '%d/%m/%Y'), reverse=True)
+#     checktime = datetime.strptime(info['ngay_gio_ke_don'], '%d/%m/%Y')
+#     current_time_encode = decimal_to_base36(int(datetime.timestamp(checktime)))
 #
-# for info in checkdata:
+#     print(checktime)
 #
-#     # checktime = datetime.strptime(info['ngay_gio_ke_don'], '%d/%m/%Y')
-#     # current_time_encode = decimal_to_base36(int(datetime.timestamp(checktime)))
-#     #
 #     qpatient = Query()
 #     condition = qpatient.prescription_ID == info['prescription_ID']
 #     #
@@ -336,9 +370,8 @@ checkdata = data_manager.getAllPrescription()
 #     print(info)
 #     # print(current_time_encode)
 #     # print("12345" + current_time_encode + "-c")
-
-    # print(info['ngay_gio_ke_don'])
-
+#
+#     # print(info['ngay_gio_ke_don'])
 #
 # date_string = '3/2/2022'
 # checktime = datetime.strptime(date_string, '%d/%m/%Y')
