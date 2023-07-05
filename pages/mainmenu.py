@@ -24,72 +24,66 @@ class MainmenuPage(tk.Frame):
         # self.root = tk.Tk()
         # self.geometry("300x200")
 
-        label1 = tk.Label(self, text="Prescription")
-        label1.pack(side="top")
+        # label1 = tk.Label(self, text="Prescription")
+        # label1.pack(side="top")
 
         # Second row
-        second_section = tk.Frame(self, bg="white", height=300)
-        second_section.pack(side="top", fill="both", expand=True)
+        # second_section = tk.Frame(self, bg="white", height=300)
+        # second_section.pack(side="top", fill="both", expand=True)
+
+
+
+        # add_prescription_button.pack(side="left")
+
+        frame = tk.Frame(self)
+        frame.pack()
+
+
+        row1 = tk.Frame(frame)
+        row1.pack(side="top", pady=10)
+
+        label1 = tk.Label(row1, text="Thêm đơn thuốc", font=("Times New Roman Bold Italic", 20), width=20)
+        label1.pack(side="right")
 
         add_prescription_img = loadImage("resources/AddPres.png")
-        add_prescription_button = tk.Button(second_section, image=add_prescription_img, command=self.gotoAddPrescription)
+        add_prescription_button = tk.Button(row1, image=add_prescription_img, command=self.gotoAddPrescription,
+                                            height=128)
         add_prescription_button.image = add_prescription_img
-        add_prescription_button.pack(side="left")
+        add_prescription_button.pack(side="left", padx=20)
+
+        row2 = tk.Frame(frame)
+        row2.pack(side="top", pady=10)
+
+        label2 = tk.Label(row2, text="Xem đơn thuốc", font=("Times New Roman Bold Italic", 20), width=20)
+        label2.pack(side="right")
 
         view_prescription_img = loadImage("resources/viewPres.png")
-        view_prescription_button = tk.Button(second_section, image=view_prescription_img, command=self.gotoViewPrescription)
+        view_prescription_button = tk.Button(row2, image=view_prescription_img, command=self.gotoViewPrescription,
+                                             height=128)
         view_prescription_button.image = view_prescription_img
-        view_prescription_button.pack(side="left")
+        view_prescription_button.pack(side="left", padx=20)
 
-        # sync_prescription_img = loadImage("resources/syncPres.png")
-        # sync_prescription_button = tk.Button(second_section, image=sync_prescription_img)
-        # sync_prescription_button.image = sync_prescription_img
-        # sync_prescription_button.pack(side="left")
+        row3 = tk.Frame(frame)
+        row3.pack(side="top", pady=10)
+
+        label3 = tk.Label(row3, text="Báo cáo", font=("Times New Roman Bold Italic", 20), width=20)
+        label3.pack(side="right")
 
         report_prescription_img = loadImage("resources/report.png")
-        report_prescription_button = tk.Button(second_section, image=report_prescription_img, command=self.gotoReport)
+        report_prescription_button = tk.Button(row3, image=report_prescription_img, command=self.gotoReport, height=128)
         report_prescription_button.image = report_prescription_img
-        report_prescription_button.pack(side="left")
+        report_prescription_button.pack(side="left", padx=20)
 
-        # Third row
-        # label2 = tk.Label(self, text="Patients")
-        # label2.pack(side="top")
-        #
-        # # Fourth row
-        # fourth_section = tk.Frame(self, bg="white", height=300)
-        # fourth_section.pack(side="top", fill="both", expand=True)
-        #
-        # view_patient_img = loadImage("resources/ViewPatient.png")
-        # view_patient_button = tk.Button(fourth_section, image=view_patient_img)
-        # view_patient_button.image = view_patient_img
-        # view_patient_button.pack(side="left")
-        #
-        # # Fifth row
-        # # fifth_section = tk.Frame(self, bg="white", height=300)
-        # # fifth_section.pack(side="top", fill="both", expand=True)
-        #
-        # label3 = tk.Label(self, text="Doctor")
-        # label3.pack(side="top")
-        #
-        # # Sixth row
-        #
-        # sixth_section = tk.Frame(self, bg="white", height=300)
-        # sixth_section.pack(side="top", fill="both", expand=True)
-        #
-        # add_doctor_img = loadImage("resources/AddDoctor.png")
-        # add_doctor_button = tk.Button(sixth_section, image=add_doctor_img)
-        # add_doctor_button.image = add_doctor_img
-        # add_doctor_button.pack(side="left")
-        #
-        # view_doctor_img = loadImage("resources/viewDoctor.png")
-        # view_doctor_button = tk.Button(sixth_section, image=view_doctor_img)
-        # view_doctor_button.image = view_doctor_img
-        # view_doctor_button.pack(side="left")
-        #
-        # sync_doctor_img = loadImage("resources/syncDoctor.png")
-        # sync_doctor_button = tk.Button(sixth_section, image=sync_doctor_img)
-        # sync_doctor_button.image = sync_doctor_img
-        # sync_doctor_button.pack(side="left")
+        row4 = tk.Frame(frame)
+        row4.pack(side="top", pady=10)
+
+        label4 = tk.Label(row4, text="Log out", font=("Times New Roman Bold Italic", 20), width=20)
+        label4.pack(side="right")
+
+        logout__img = loadImage("resources/backbutton.png")
+        logout_button = tk.Button(row4, image=logout__img, command=self.back, height=128)
+        logout_button.image = logout__img
+        logout_button.pack(side="left", padx=20)
 
     def gotoAddPrescription(self):
         AppManager.getAppManager().getFrame("AddPrescriptionForm").resetAll()
@@ -102,3 +96,6 @@ class MainmenuPage(tk.Frame):
 
     def gotoReport(self):
         AppManager.getAppManager().getFrame("ReportMenu").tkraise()
+
+    def back(self):
+        AppManager.getAppManager().getFrame("LoginPage").tkraise()

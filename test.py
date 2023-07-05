@@ -1,7 +1,39 @@
-dictdata = {'chan_doan': [['A01', 'Đau'], ['B54', 'A']], 'luu_y': 'AASAS', 'hinh_thuc_dieu_tri': 'aSASAS', 'dot_dung_thuoc': 'DSASA', 'don_thuoc': [['456b', '']], 'loi_dan': 'DD', 'ngay_tai_kham': '14/6/2023', 'ngay_gio_ke_don': '27/6/2023', 'chu_ky_so': 'qwewewq', 'patient': 'Anh_5/6/2023_0', 'prescription_ID': '12345rwvdw0-c', 'sdt_nguoi_kham': '', 'synced': False, 'ho_ten_benh_nhan': 'Anh', 'ma_dinh_danh_y_te': '123123', 'ma_dinh_danh_cong_dan': '4343213123', 'ngay_sinh_benh_nhan': '5/6/2023', 'can_nang': '33', 'gioi_tinh': 'Nữ', 'ma_so_the_bao_hiem_y_te': '213', 'thong_tin_nguoi_giam_ho': 'AAA', 'dia_chi': '423332', 'ID': 'Anh_5/6/2023_0'}
+import tkinter as tk
 
+root = tk.Tk()
+root.geometry("300x300")
 
-import pandas as pd
+frame = tk.Frame(root)
+frame.pack()
 
-print(pd.DataFrame.from_dict(dictdata))
+row1 = tk.Frame(frame, height=50)
+row1.pack(side="top", pady=10)
 
+label1 = tk.Label(row1, text="Label 1", font=("Arial Bold", 14))
+label1.pack(side="right")
+
+button1 = tk.Button(row1, text="Button 1")
+button1.pack(side="left")
+
+row2 = tk.Frame(frame, height=50)
+row2.pack(side="top", pady=10)
+
+label2 = tk.Label(row2, text="Label 2", font=("Times New Roman", 12))
+label2.pack(side="right")
+
+button2 = tk.Button(row2, text="Button 2")
+button2.pack(side="left")
+
+row3 = tk.Frame(frame, height=50)
+row3.pack(side="top", pady=10)
+
+label3 = tk.Label(row3, text="Label 3", font=("Verdana", 10))
+label3.pack(side="right")
+
+button3 = tk.Button(row3, text="Button 3")
+button3.pack(side="left")
+
+# for row in [row1, row2, row3]:
+#     row.pack_propagate(0)
+
+root.mainloop()
